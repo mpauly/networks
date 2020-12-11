@@ -7,9 +7,7 @@
 #define EDGE_LENGTH 100
 #define INDEXAT2D(x, y) ((x)*EDGE_LENGTH + y)
 #define INDEXAT3D(x, y, z) ((x)*EDGE_LENGTH * EDGE_LENGTH + (y)*EDGE_LENGTH + z)
-
-// This method just computes the probability weight per node - here we assume a uniform distribution
-double get_node_weight(int outDegree) { return 1.0 / outDegree; }
+#define DEBUG false
 
 // For a given startNode this method returns a hashmap of vectors, such that the keys of the hashmap
 // corresond to the Ids of the nodes that one wants to study and the vectors correspond to the probability
@@ -17,90 +15,88 @@ double get_node_weight(int outDegree) { return 1.0 / outDegree; }
 // The implementation roughly corresponds to a breadth-first search tree.
 // Inspired by DoBfs
 template <class PGraph>
-THash<TInt, std::vector<double>> traverseBfsTree(const PGraph &Graph, const int &start_node, const int &max_depth,
-                                                 std::ofstream &dimfile) {
+std::vector<double> traverseBfsTree(const PGraph &Graph, const int &start_node, const int &max_depth,
+                                    std::ofstream &dimfile) {
   // setup data structures
   TSnapQueue<int> queue;
-  std::vector<THash<TInt, TInt>> levelCounts(max_depth + 1);
-  std::vector<int> totalCounts(max_depth + 1);
-  THash<TInt, std::vector<double>> levelProbabilities;
-  THash<TInt, std::vector<double>> nodeDimensionality;
-  THash<TInt, int> nodeFirstVisited;
-  std::vector<double> thisLvlProbs;
+  std::vector<THash<TInt, double>> levelProbabilities(max_depth + 1);
+  // std::vector<long> totalCounts(max_depth + 1);
+  std::vector<double> return_probability(max_depth + 1);
+  std::vector<double> dimension(max_depth);
+
+  double probability_derivative, mean_probability;
+  double node_probability;
+
   IAssert(Graph->IsNode(start_node));
-  int visits;
 
   // setup the queue
   queue.Clr(false);
   queue.Push(start_node);
   int v, MaxDist = 0;
-  levelCounts[0].AddDat(start_node, 1);
-  std::vector<double> zero_probs(max_depth + 1);
-  zero_probs[0] = 1.0;
-  levelProbabilities.AddDat(start_node, zero_probs);
-  nodeFirstVisited.AddDat(start_node, 0);
-  double node_probability_weight, probability_derivative, mean_probability;
+  // Set the level zero quantities by hand before we start walking
+  levelProbabilities[0].AddDat(start_node, 1);
 
-  // first we keep around a vector of length max_depth for each of the sites - in a second step we then trim this vector
-  for (int lvl = 1; lvl <= max_depth; lvl++) {
+  for (int sigma = 1; sigma <= max_depth; sigma++) {
+    if (DEBUG)
+      printf("\n Sigma %d\n", sigma);
     // deal with all the nodes that are in the queue at the moment
     // this relies on the loop initialization begin run exactly once, as the queue grows while the loop is executed
     for (int node = queue.Len(); node > 0; node--) {
       // take a node out of the queue
       const int nodeId = queue.Top();
+      if (DEBUG)
+        printf("   Node %d   ", nodeId);
       queue.Pop();
       const typename PGraph::TObj::TNodeI NodeI = Graph->GetNI(nodeId);
       // loop over child nodes
-      const int noteDegree = NodeI.GetOutDeg();
-      for (v = 0; v < noteDegree; v++) {
+      const int nodeDegree = NodeI.GetOutDeg();
+      for (v = 0; v < nodeDegree; v++) {
         const int childId = NodeI.GetOutNId(v);
-        // compute the probability weight for this node
-        node_probability_weight = get_node_weight(noteDegree);
         // did we already touch this node? If yes just update existing entry
         // if no then create a new entry and add the node to the queue
-
-        if (levelCounts[lvl].IsKey(childId)) {
-          visits = levelCounts[lvl].GetDat(childId) + 1;
+        if (levelProbabilities[sigma].IsKey(childId)) {
+          node_probability = levelProbabilities[sigma].GetDat(childId) +
+                             levelProbabilities[sigma - 1].GetDat(nodeId) / ((double)nodeDegree);
         } else {
-          visits = 1;
+          node_probability = levelProbabilities[sigma - 1].GetDat(nodeId) / ((double)nodeDegree);
           queue.Push(childId);
         }
-
-        if (levelProbabilities.IsKey(childId)) {
-          thisLvlProbs = levelProbabilities.GetDat(childId);
-          thisLvlProbs[lvl] = thisLvlProbs[lvl] + levelProbabilities.GetDat(nodeId)[lvl - 1] * node_probability_weight;
-        } else {
-          nodeFirstVisited.AddDat(childId, lvl);
-          thisLvlProbs = std::vector<double>(max_depth + 1);
-          thisLvlProbs[lvl] = levelProbabilities.GetDat(nodeId)[lvl - 1] * node_probability_weight;
-        }
+        if (DEBUG)
+          printf(" %d : %f ", childId, node_probability);
         // AddDat also overwrites an existing entry
-        levelCounts[lvl].AddDat(childId, visits);
-        levelProbabilities.AddDat(childId, thisLvlProbs);
+        levelProbabilities[sigma].AddDat(childId, node_probability);
       }
+    }
+  }
+  // Compute the return probability
+  for (int sigma = 0; sigma <= max_depth; sigma++) {
+    if (levelProbabilities[sigma].IsKey(start_node)) {
+      return_probability[sigma] = levelProbabilities[sigma].GetDat(start_node);
+    } else {
+      return_probability[sigma] = 0.0;
     }
   }
 
   // Extract the dimensionality
-
-  int nodeId, startLevel, sigma;
-  for (int lvl = 0; lvl < max_depth; lvl++) {
-    sigma = lvl;
-
+  int nodeId, startLevel;
+  for (int sigma = 0; sigma < max_depth; sigma++) {
     // we are using a symmetric definition of the first derivative here and additional using the mean of
     // neighbouring sites for the probability
-    mean_probability = 0.5 * (probability_trail[lvl - 1] + probability_trail[lvl + 1]);
-    probability_derivative = 0.5 * (probability_trail[lvl + 1] - probability_trail[lvl - 1]);
+    mean_probability = 0.5 * (return_probability[sigma - 1] + return_probability[sigma + 1]);
+    probability_derivative = 0.5 * (return_probability[sigma + 1] - return_probability[sigma - 1]);
     // compute the spectral dimension
-    dimensionality[sigma] = -2.0 * sigma / mean_probability * probability_derivative;
-    // printf("%f \t", dimensionality[sigma]);
+    dimension[sigma] = -2.0 * ((double)sigma) / mean_probability * probability_derivative;
+    if (DEBUG) {
+      printf("Dimension: \n");
+      printf("%d %f \n", sigma, dimension[sigma]);
+    }
     // write to file
+    dimfile << sigma << "\t";
     dimfile << std::fixed << std::setprecision(12);
-    dimfile << dimensionality[sigma] << "\t";
+    dimfile << dimension[sigma] << "\n";
   }
-  dimfile << "\n";
 
-  return levelProbabilities;
+  return dimension;
 }
 
 // ------------------ the main function -----------------------
@@ -109,7 +105,7 @@ int main(int argc, char *argv[]) {
 
   // Create the graph
   PGraph G = PGraph::TObj::New();
-  int ring_length = 1000;
+  int ring_length = 26;
   for (int n = 0; n < ring_length; n++) {
     G->AddNode(); // if no parameter is given, node ids are 0,1,...
   }
@@ -130,13 +126,13 @@ int main(int argc, char *argv[]) {
   //  }
   //}
 
-  TSnap::DrawGViz(G, gvlDot, "graph.png");
+  // TSnap::DrawGViz(G, gvlDot, "graph.png");
 
   std::ofstream dimfile;
-  dimfile.open("dimension.dat");
-  dimfile << "# dimensions for a chain of length \n";
+  dimfile.open("data/dimension_1d.dat");
+  dimfile << "# dimensions for a ring of length " << ring_length << "\n";
   // arguments here are start_node and depth
-  auto treeCounts = traverseBfsTree(G, 7, 100, dimfile);
+  auto treeCounts = traverseBfsTree(G, 7, 150, dimfile);
   dimfile.close();
 
   // ================== 2D lattice ===================================
@@ -149,41 +145,18 @@ int main(int argc, char *argv[]) {
   // Build a ring
   for (int n = 0; n < EDGE_LENGTH - 1; n++) {
     for (int m = 0; m < EDGE_LENGTH - 1; m++) {
-      if (n == 50 && m == 50) {
-        printf("  Edge %d -- %d added\n", INDEXAT2D(n, m), INDEXAT2D(n + 1, m));
-        printf("  Edge %d -- %d added\n", INDEXAT2D(n, m), INDEXAT2D(n, m + 1));
-      }
       G2->AddEdge(INDEXAT2D(n, m), INDEXAT2D(n + 1, m));
       G2->AddEdge(INDEXAT2D(n, m), INDEXAT2D(n, m + 1));
     }
   }
 
   const typename PGraph::TObj::TNodeI NodeI = G2->GetNI(INDEXAT2D(50, 50));
-  // loop over child nodes
   const int noteDegree = NodeI.GetOutDeg();
-  printf("  Start node %d has degree %d\n", INDEXAT2D(50, 50), noteDegree);
-  for (int v = 0; v < noteDegree; v++) {
-    printf("\t %d", NodeI.GetOutNId(v));
-  }
-  printf("Should be %d \t %d \t %d \t %d", INDEXAT2D(49, 50), INDEXAT2D(51, 50), INDEXAT2D(50, 51), INDEXAT2D(50, 49));
-  printf("\n");
-  // Adding random edges
-  // for (int e = 0; e < 10; e++) {
-  //  const int NId1 = G->GetRndNId();
-  //  const int NId2 = G->GetRndNId();
-  //  if (G->AddEdge(NId1, NId2) != -2) {
-  //    printf("  Edge %d -- %d added\n", NId1, NId2);
-  //  } else {
-  //    printf("  Edge %d -- %d already exists\n", NId1, NId2);
-  //  }
-  //}
 
   std::ofstream dimfile2;
-  dimfile2.open("dimension_2D.dat");
+  dimfile2.open("data/dimension_2d.dat");
   dimfile2 << "# dimensions for a square \n";
-  // arguments here are start_node and depth
-  printf("Starting Walker \n");
-  auto treeCounts2 = traverseBfsTree(G2, INDEXAT2D(50, 50), 50, dimfile2);
+  // auto treeCounts2 = traverseBfsTree(G2, INDEXAT2D(50, 50), 50, dimfile2);
   dimfile2.close();
 
   // ================== 3D lattice ===================================
@@ -216,11 +189,9 @@ int main(int argc, char *argv[]) {
   //}
 
   std::ofstream dimfile3;
-  dimfile3.open("dimension_3D.dat");
+  dimfile3.open("data/dimension_3d.dat");
   dimfile3 << "# dimensions for a cube \n";
-  // arguments here are start_node and depth
-  printf("Starting Walker \n");
-  auto treeCounts3 = traverseBfsTree(G3, INDEXAT3D(50, 50, 50), 50, dimfile3);
+  // auto treeCounts3 = traverseBfsTree(G3, INDEXAT3D(50, 50, 50), 50, dimfile3);
   dimfile3.close();
 
   // the following are approximate neighbourhood functions - might be
