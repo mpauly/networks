@@ -32,5 +32,6 @@
 *.app
 
 data/*
+plots/*
 *.x
 *.x.Err
