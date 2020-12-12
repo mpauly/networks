@@ -26,6 +26,7 @@ plt.axvline(100, ls='--')
 
 plt.xlabel('$\\sigma$')
 plt.ylabel('$d_{\\rm spec}$')
+plt.ylim([-0.2, 1.2])
 plt.savefig('plots/dimension_1d.png')
 
 # 2D plot

@@ -19,9 +19,9 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
                                             std::ofstream &dimfile) {
   // setup data structures
   TSnapQueue<int> queue;
-  std::vector<THash<TInt, double>> levelProbabilities(max_depth + 1);
+  std::vector<THash<TInt, double>> levelProbabilities(max_depth + 2);
   // std::vector<long> totalCounts(max_depth + 1);
-  std::vector<double> return_probability(max_depth + 1);
+  std::vector<double> return_probability(max_depth + 2);
   std::vector<double> dimension(max_depth);
 
   double probability_derivative, mean_probability;
@@ -36,7 +36,7 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
   // Set the level zero quantities by hand before we start walking
   levelProbabilities[0].AddDat(start_node, 1);
 
-  for (int sigma = 1; sigma <= max_depth; sigma++) {
+  for (int sigma = 1; sigma < max_depth + 2; sigma++) {
     if (DEBUG)
       printf("\n Sigma %d\n", sigma);
     // deal with all the nodes that are in the queue at the moment
@@ -68,8 +68,9 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
       }
     }
   }
+
   // Compute the return probability
-  for (int sigma = 0; sigma <= max_depth; sigma++) {
+  for (int sigma = 0; sigma < max_depth + 2; sigma++) {
     if (levelProbabilities[sigma].IsKey(start_node)) {
       return_probability[sigma] = levelProbabilities[sigma].GetDat(start_node);
     } else {
@@ -79,11 +80,16 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
 
   // Extract the dimensionality
   int nodeId, startLevel;
-  for (int sigma = 0; sigma < max_depth; sigma++) {
-    // we are using a symmetric definition of the first derivative here and additional using the mean of
-    // neighbouring sites for the probability
+  for (int sigma = 2; sigma < max_depth; sigma++) {
+    // we to something like the five-point stencil for the averaging
     mean_probability = 0.5 * (return_probability[sigma - 1] + return_probability[sigma + 1]);
-    probability_derivative = 0.5 * (return_probability[sigma + 1] - return_probability[sigma - 1]);
+    // mean_probability =
+    //    0.25 * (return_probability[sigma - 1] + 2 * return_probability[sigma] + return_probability[sigma + 1]);
+    // symmetric five-point stencil - cf. wikpedia "Finite difference coefficents"
+    probability_derivative = 0.5 * (-return_probability[sigma - 1] + return_probability[sigma + 1]);
+    // probability_derivative = (return_probability[sigma - 2] - 8 * return_probability[sigma - 1] +
+    //                          8 * return_probability[sigma + 1] - return_probability[sigma + 2]) /
+    //                         12.0;
     // compute the spectral dimension
     dimension[sigma] = -2.0 * ((double)sigma) / mean_probability * probability_derivative;
     if (DEBUG) {
@@ -160,7 +166,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  TSnap::DrawGViz(G, gvlDot, "graph.png");
+  // TSnap::DrawGViz(G, gvlDot, "graph.png");
 
   std::ofstream dimfile1a;
   dimfile1a.open("data/dimension_1d_connected.dat");
