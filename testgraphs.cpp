@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
   std::ofstream dimfile2;
   dimfile2.open("data/dimension_2d.dat");
   dimfile2 << "# dimensions for a square \n";
-  // auto treeCounts2 = traverseBfsTree(G2, INDEXAT2D(50, 50), 50, dimfile2);
+  auto treeCounts2 = traverseBfsTree(G2, INDEXAT2D(50, 50), 50, dimfile2);
   dimfile2.close();
 
   // ================== 3D lattice ===================================
@@ -191,7 +191,7 @@ int main(int argc, char *argv[]) {
   std::ofstream dimfile3;
   dimfile3.open("data/dimension_3d.dat");
   dimfile3 << "# dimensions for a cube \n";
-  // auto treeCounts3 = traverseBfsTree(G3, INDEXAT3D(50, 50, 50), 50, dimfile3);
+  auto treeCounts3 = traverseBfsTree(G3, INDEXAT3D(50, 50, 50), 50, dimfile3);
   dimfile3.close();
 
   // the following are approximate neighbourhood functions - might be
