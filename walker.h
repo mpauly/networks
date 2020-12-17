@@ -1,7 +1,8 @@
-#include <iostream>
-#include <iomanip>
-#include <vector>
 #include <fstream>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <vector>
 
 #define WALKER_DEBUG false
 
@@ -11,7 +12,8 @@
 // The implementation roughly corresponds to a breadth-first search tree.
 // Inspired by DoBfs
 template <class PGraph>
-std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &start_node, const int &max_depth) {
+std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &start_node, const int &max_depth,
+                                            std::function<void(int)> progress_monitor) {
   // setup data structures
   TSnapQueue<int> queue;
   std::vector<THash<TInt, double>> levelProbabilities(max_depth + 2);
@@ -34,6 +36,7 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
   for (int sigma = 1; sigma < max_depth + 2; sigma++) {
     if (WALKER_DEBUG)
       printf("\n Sigma %d\n", sigma);
+    progress_monitor(sigma);
     // deal with all the nodes that are in the queue at the moment
     // this relies on the loop initialization begin run exactly once, as the queue grows while the loop is executed
     for (int node = queue.Len(); node > 0; node--) {

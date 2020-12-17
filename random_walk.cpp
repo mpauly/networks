@@ -1,6 +1,8 @@
 #include "Snap.h"
 #include "walker.h"
 #include <fstream>
+#include <functional>
+#include <iostream>
 #include <unistd.h>
 
 int main(int argc, char *argv[]) {
@@ -61,7 +63,12 @@ int main(int argc, char *argv[]) {
   // ==== do the walk ====
 
   std::cout << "- Starting to walk at node " << start_node << " for " << sigma_max << " steps" << std::endl;
-  auto walk_dimensions = spectralDimensionAtNode(G, start_node, sigma_max);
+  std::function<void(int)> progress_monitor = [](int sigma) {
+    if (sigma % 50 == 0)
+      std::cout << "\t - sigma = " << sigma << std::endl;
+  };
+
+  auto walk_dimensions = spectralDimensionAtNode(G, start_node, sigma_max, progress_monitor);
 
   // ===  write to file  ==
   std::cout << "- Writing results to file " << dimension_file << std::endl;
