@@ -8,6 +8,9 @@ INCLUDE = -I ${SNAP_DIR}/glib-core/ -I ${SNAP_DIR}/snap-core/
 make_testgraphs:
 	${CC} ${INCLUDE} ${LIB_DIR} ${LIBS} ${CXXFLAGS} -o make_testgraphs.x make_testgraphs.cpp ${SNAP_DIR}/snap-core/Snap.o
 
+make_random_walk:
+	${CC} ${INCLUDE} ${LIB_DIR} ${LIBS} ${CXXFLAGS} -o random_walk.x random_walk.cpp ${SNAP_DIR}/snap-core/Snap.o
+
 clean:
 	rm -f *.x
 	rm -f graphs/*.dat

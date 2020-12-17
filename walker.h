@@ -3,7 +3,7 @@
 #include <vector>
 #include <fstream>
 
-#define DEBUG false
+#define WALKER_DEBUG false
 
 // For a given startNode this method returns a hashmap of vectors, such that the keys of the hashmap
 // corresond to the Ids of the nodes that one wants to study and the vectors correspond to the probability
@@ -11,8 +11,7 @@
 // The implementation roughly corresponds to a breadth-first search tree.
 // Inspired by DoBfs
 template <class PGraph>
-std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &start_node, const int &max_depth,
-                                            std::ofstream &dimfile) {
+std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &start_node, const int &max_depth) {
   // setup data structures
   TSnapQueue<int> queue;
   std::vector<THash<TInt, double>> levelProbabilities(max_depth + 2);
@@ -33,14 +32,14 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
   levelProbabilities[0].AddDat(start_node, 1);
 
   for (int sigma = 1; sigma < max_depth + 2; sigma++) {
-    if (DEBUG)
+    if (WALKER_DEBUG)
       printf("\n Sigma %d\n", sigma);
     // deal with all the nodes that are in the queue at the moment
     // this relies on the loop initialization begin run exactly once, as the queue grows while the loop is executed
     for (int node = queue.Len(); node > 0; node--) {
       // take a node out of the queue
       const int nodeId = queue.Top();
-      if (DEBUG)
+      if (WALKER_DEBUG)
         printf("   Node %d   ", nodeId);
       queue.Pop();
       const typename PGraph::TObj::TNodeI NodeI = Graph->GetNI(nodeId);
@@ -57,7 +56,7 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
           node_probability = levelProbabilities[sigma - 1].GetDat(nodeId) / ((double)nodeDegree);
           queue.Push(childId);
         }
-        if (DEBUG)
+        if (WALKER_DEBUG)
           printf(" %d : %f ", childId, node_probability);
         // AddDat also overwrites an existing entry
         levelProbabilities[sigma].AddDat(childId, node_probability);
@@ -88,14 +87,10 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
     //                         12.0;
     // compute the spectral dimension
     dimension[sigma] = -2.0 * ((double)sigma) / mean_probability * probability_derivative;
-    if (DEBUG) {
+    if (WALKER_DEBUG) {
       printf("Dimension: \n");
       printf("%d %f \n", sigma, dimension[sigma]);
     }
-    // write to file
-    dimfile << sigma << "\t";
-    dimfile << std::fixed << std::setprecision(12);
-    dimfile << dimension[sigma] << "\n";
   }
 
   return dimension;
