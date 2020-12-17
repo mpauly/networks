@@ -1,16 +1,19 @@
 CC = g++
-CXXFLAGS = -std=c++11 -O3 -g -fopenmp
+CXXFLAGS = -std=c++17 -O3 -g -fopenmp
 LIBS = -lrt -lsnap
 SNAP_DIR = ../Snap
 LIB_DIR = -L ${SNAP_DIR}/snap-core/
 INCLUDE = -I ${SNAP_DIR}/glib-core/ -I ${SNAP_DIR}/snap-core/
+objects := $(wildcard *.cpp)
 
-make_testgraphs:
-	${CC} ${INCLUDE} ${LIB_DIR} ${LIBS} ${CXXFLAGS} -o make_testgraphs.x make_testgraphs.cpp ${SNAP_DIR}/snap-core/Snap.o
+all: ${objects:.cpp=.x}
 
-make_random_walk:
-	${CC} ${INCLUDE} ${LIB_DIR} ${LIBS} ${CXXFLAGS} -o random_walk.x random_walk.cpp ${SNAP_DIR}/snap-core/Snap.o
+%.x: %.cpp
+	${CC} ${INCLUDE} ${LIB_DIR} ${LIBS} ${CXXFLAGS} -o $(@) $< ${SNAP_DIR}/snap-core/Snap.o
+
 
 clean:
 	rm -f *.x
 	rm -f graphs/*.dat
+	rm -f data/*.dat
+	rm -f plots/*.dat
