@@ -5,7 +5,7 @@
 #include <iostream>
 #include <unistd.h>
 
-const double DIFFUSION_CONSTANT = 0.8;
+const double DIFFUSION_CONSTANT = 0.5;
 
 int main(int argc, char *argv[]) {
   int start_node = 0;

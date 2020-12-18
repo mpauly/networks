@@ -1,7 +1,7 @@
 CC = g++
 CXXFLAGS = -std=c++17 -O3 -g -fopenmp
 LIBS = -lrt -lsnap
-SNAP_DIR = ../Snap
+SNAP_DIR = snap
 LIB_DIR = -L ${SNAP_DIR}/snap-core/
 INCLUDE = -I ${SNAP_DIR}/glib-core/ -I ${SNAP_DIR}/snap-core/
 objects := $(wildcard *.cpp)
