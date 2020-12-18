@@ -13,7 +13,8 @@
 // Inspired by DoBfs
 template <class PGraph>
 std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &start_node, const int &max_depth,
-                                            std::function<void(int)> progress_monitor) {
+                                            std::function<void(int)> progress_monitor,
+                                            const double diffusion_constant) {
   // setup data structures
   TSnapQueue<int> queue;
   std::vector<THash<TInt, double>> levelProbabilities(max_depth + 2);
@@ -46,17 +47,27 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
         printf("   Node %d   ", nodeId);
       queue.Pop();
       const typename PGraph::TObj::TNodeI NodeI = Graph->GetNI(nodeId);
-      // loop over child nodes
+
       const int nodeDegree = NodeI.GetOutDeg();
+      // the diffusion constant term at the same node
+      if (levelProbabilities[sigma].IsKey(nodeId)) {
+        node_probability = levelProbabilities[sigma].GetDat(nodeId) +
+                           (1.0 - diffusion_constant) * levelProbabilities[sigma - 1].GetDat(nodeId);
+      } else {
+        node_probability = (1.0 - diffusion_constant) * levelProbabilities[sigma - 1].GetDat(nodeId);
+        queue.Push(nodeId);
+      }
+      levelProbabilities[sigma].AddDat(nodeId, node_probability);
+      // loop over child nodes
       for (v = 0; v < nodeDegree; v++) {
         const int childId = NodeI.GetOutNId(v);
         // did we already touch this node? If yes just update existing entry
         // if no then create a new entry and add the node to the queue
         if (levelProbabilities[sigma].IsKey(childId)) {
           node_probability = levelProbabilities[sigma].GetDat(childId) +
-                             levelProbabilities[sigma - 1].GetDat(nodeId) / ((double)nodeDegree);
+                             diffusion_constant * levelProbabilities[sigma - 1].GetDat(nodeId) / ((double)nodeDegree);
         } else {
-          node_probability = levelProbabilities[sigma - 1].GetDat(nodeId) / ((double)nodeDegree);
+          node_probability = diffusion_constant * levelProbabilities[sigma - 1].GetDat(nodeId) / ((double)nodeDegree);
           queue.Push(childId);
         }
         if (WALKER_DEBUG)

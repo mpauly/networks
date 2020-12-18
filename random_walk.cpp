@@ -5,6 +5,8 @@
 #include <iostream>
 #include <unistd.h>
 
+const double DIFFUSION_CONSTANT = 0.8;
+
 int main(int argc, char *argv[]) {
   int start_node = 0;
   int sigma_max = 100;
@@ -68,7 +70,7 @@ int main(int argc, char *argv[]) {
       std::cout << "\t - sigma = " << sigma << std::endl;
   };
 
-  auto walk_dimensions = spectralDimensionAtNode(G, start_node, sigma_max, progress_monitor);
+  auto walk_dimensions = spectralDimensionAtNode(G, start_node, sigma_max, progress_monitor, DIFFUSION_CONSTANT);
 
   // ===  write to file  ==
   std::cout << "- Writing results to file " << dimension_file << std::endl;
