@@ -7,6 +7,8 @@
 
 const double DIFFUSION_CONSTANT = 0.5;
 
+// void print_usage() { std::cout << }
+
 int main(int argc, char *argv[]) {
   int start_node = 0;
   int sigma_max = 100;
@@ -81,6 +83,7 @@ int main(int argc, char *argv[]) {
   dimfile << "# walk length: " << sigma_max << std::endl;
   dimfile << "# format: start_node sigma d_spec" << std::endl;
 
+#pragma omp parallel for
   for (int walk = 0; walk < nr_of_walkers; walk++) {
     int walker_start_node;
     if (nr_of_walkers > 1) {
@@ -89,8 +92,11 @@ int main(int argc, char *argv[]) {
       walker_start_node = start_node;
     }
 
-    std::cout << "- Starting walk " << walk << " at node " << start_node << " for " << sigma_max << " steps"
-              << std::endl;
+#pragma omp critical
+    {
+      std::cout << "- Starting walk " << walk << " at node " << start_node << " for " << sigma_max << " steps"
+                << std::endl;
+    }
     std::function<void(int)> progress_monitor = [walk](int sigma) {
       if (sigma % 50 == 0)
         std::cout << "\t - w" << walk << " sigma = " << sigma << std::endl;
@@ -99,11 +105,15 @@ int main(int argc, char *argv[]) {
     auto walk_dimensions =
         spectralDimensionAtNode(G, walker_start_node, sigma_max, progress_monitor, DIFFUSION_CONSTANT);
 
-    // ===  write to file  ==
-    for (int sigma = 0; sigma < walk_dimensions.size(); sigma++) {
-      dimfile << walker_start_node << "\t" << sigma << "\t";
-      dimfile << std::fixed << std::setprecision(12);
-      dimfile << walk_dimensions[sigma] << "\n";
+// ===  write to file  ==
+#pragma omp critical
+    {
+      for (int sigma = 0; sigma < walk_dimensions.size(); sigma++) {
+        dimfile << walker_start_node << "\t" << sigma << "\t";
+        dimfile << std::fixed << std::setprecision(12);
+        dimfile << walk_dimensions[sigma] << "\n";
+      }
+      std::cout << "- Writing walk " << walk << " to file" << std::endl;
     }
   }
   dimfile.close();
