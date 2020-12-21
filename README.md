@@ -2,7 +2,7 @@
 This repository contains code to implement random walks and the computation of the spectral dimension on various networks utilizing [SNAP](http://snap.stanford.edu/).
 
 ### Installation
-Clone this repository with `git clone --recurse-submodules git://github.com:mpauly/networks.git`. This will not only clone the content of this repository, but also a copy of snap.
+Clone this repository with `git clone --recurse-submodules git@github.com:mpauly/networks.git`. This will not only clone the content of this repository, but also a copy of snap.
 To install first change into the snap subfolder, `cd networks/snap`, and execute `make` there. This will take a while. Then change to snap-core, `cd snap-core` and execute `make lib` there.
 This should build all parts of snap that you need.
 

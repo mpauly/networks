@@ -31,8 +31,5 @@
 *.out
 *.app
 
-data/**
-plots/**
-graphs/**
 *.x
 *.x.Err
