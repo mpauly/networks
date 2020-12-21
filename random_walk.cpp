@@ -119,9 +119,10 @@ int main(int argc, char *argv[]) {
         spectralDimensionAtNode(G, walker_start_node, sigma_max, progress_monitor, DIFFUSION_CONSTANT);
 
 // ===  write to file  ==
+// We drop the first data point because one cannot compute a derivative at that data point
 #pragma omp critical
     {
-      for (int sigma = 0; sigma < walk_dimensions.size(); sigma++) {
+      for (int sigma = 1; sigma < walk_dimensions.size(); sigma++) {
         dimfile << walker_start_node << "\t" << sigma << "\t";
         dimfile << std::fixed << std::setprecision(12);
         dimfile << walk_dimensions[sigma] << "\n";

@@ -17,8 +17,8 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
                                             const double diffusion_constant) {
   // setup data structures
   TSnapQueue<int> queue;
-  std::vector<THash<TInt, double>> levelProbabilities(max_depth + 2);
-  // std::vector<long> totalCounts(max_depth + 1);
+  // std::vector<THash<TInt, double>> levelProbabilities(max_depth + 2);
+  THash<TInt, double> last_lvl_probabilities;
   std::vector<double> return_probability(max_depth + 2);
   std::vector<double> dimension(max_depth);
 
@@ -32,11 +32,14 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
   queue.Push(start_node);
   int v, MaxDist = 0;
   // Set the level zero quantities by hand before we start walking
-  levelProbabilities[0].AddDat(start_node, 1);
+  last_lvl_probabilities.AddDat(start_node, 1.0);
+  return_probability[0] = 1.0;
 
   for (int sigma = 1; sigma < max_depth + 2; sigma++) {
+    THash<TInt, double> lvl_probabilities;
+
     if (WALKER_DEBUG)
-      printf("\n Sigma %d\n", sigma);
+      printf("\n == Sigma %d ==\n", sigma);
     progress_monitor(sigma);
     // deal with all the nodes that are in the queue at the moment
     // this relies on the loop initialization begin run exactly once, as the queue grows while the loop is executed
@@ -50,46 +53,47 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
 
       const int nodeDegree = NodeI.GetOutDeg();
       // the diffusion constant term at the same node
-      if (levelProbabilities[sigma].IsKey(nodeId)) {
-        node_probability = levelProbabilities[sigma].GetDat(nodeId) +
-                           (1.0 - diffusion_constant) * levelProbabilities[sigma - 1].GetDat(nodeId);
+      if (lvl_probabilities.IsKey(nodeId)) {
+        node_probability = lvl_probabilities.GetDat(nodeId);
       } else {
-        node_probability = (1.0 - diffusion_constant) * levelProbabilities[sigma - 1].GetDat(nodeId);
+        node_probability = 0;
         queue.Push(nodeId);
       }
-      levelProbabilities[sigma].AddDat(nodeId, node_probability);
+      node_probability += (1.0 - diffusion_constant) * last_lvl_probabilities.GetDat(nodeId);
+      lvl_probabilities.AddDat(nodeId, node_probability);
       // loop over child nodes
       for (v = 0; v < nodeDegree; v++) {
         const int childId = NodeI.GetOutNId(v);
         // did we already touch this node? If yes just update existing entry
         // if no then create a new entry and add the node to the queue
-        if (levelProbabilities[sigma].IsKey(childId)) {
-          node_probability = levelProbabilities[sigma].GetDat(childId) +
-                             diffusion_constant * levelProbabilities[sigma - 1].GetDat(nodeId) / ((double)nodeDegree);
+        if (lvl_probabilities.IsKey(childId)) {
+          node_probability = lvl_probabilities.GetDat(childId);
         } else {
-          node_probability = diffusion_constant * levelProbabilities[sigma - 1].GetDat(nodeId) / ((double)nodeDegree);
+          node_probability = 0.0;
           queue.Push(childId);
         }
+        node_probability += diffusion_constant * last_lvl_probabilities.GetDat(nodeId) / ((double)nodeDegree);
         if (WALKER_DEBUG)
           printf(" %d : %f ", childId, node_probability);
         // AddDat also overwrites an existing entry
-        levelProbabilities[sigma].AddDat(childId, node_probability);
+        lvl_probabilities.AddDat(childId, node_probability);
+      }
+
+      if (lvl_probabilities.IsKey(start_node)) {
+        return_probability[sigma] = lvl_probabilities.GetDat(start_node);
+      } else {
+        return_probability[sigma] = 0.0;
       }
     }
-  }
-
-  // Compute the return probability
-  for (int sigma = 0; sigma < max_depth + 2; sigma++) {
-    if (levelProbabilities[sigma].IsKey(start_node)) {
-      return_probability[sigma] = levelProbabilities[sigma].GetDat(start_node);
-    } else {
-      return_probability[sigma] = 0.0;
-    }
+    last_lvl_probabilities = lvl_probabilities;
   }
 
   // Extract the dimensionality
+  if (WALKER_DEBUG) {
+    printf(" == Dimension == \n");
+  }
   int nodeId, startLevel;
-  for (int sigma = 2; sigma < max_depth; sigma++) {
+  for (int sigma = 1; sigma < max_depth; sigma++) {
     // we to something like the five-point stencil for the averaging
     mean_probability = 0.5 * (return_probability[sigma - 1] + return_probability[sigma + 1]);
     // mean_probability =
@@ -101,10 +105,8 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
     //                         12.0;
     // compute the spectral dimension
     dimension[sigma] = -2.0 * ((double)sigma) / mean_probability * probability_derivative;
-    if (WALKER_DEBUG) {
-      printf("Dimension: \n");
+    if (WALKER_DEBUG)
       printf("%d %f \n", sigma, dimension[sigma]);
-    }
   }
 
   return dimension;
