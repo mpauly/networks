@@ -11,6 +11,10 @@ all: ${objects:.cpp=.x}
 %.x: %.cpp
 	${CC} ${INCLUDE} ${LIB_DIR} ${LIBS} ${CXXFLAGS} -o $(@) $< ${SNAP_DIR}/snap-core/Snap.o
 
+snap:
+	cd snap && $(MAKE)
+	cd snap/snap-core && $(MAKE) lib
+
 graph_data:
 	 wget -O - http://snap.stanford.edu/data/roadNet-PA.txt.gz | gunzip -c > graphs/roadNet-PA.txt
 	 wget -O - http://snap.stanford.edu/data/as-skitter.txt.gz | gunzip -c > graphs/as-skitter.txt
@@ -20,4 +24,4 @@ clean:
 	rm -f *.x
 	rm -f graphs/*.dat
 	rm -f data/*.dat
-	rm -f plots/*.dat
+	rm -f plots/*.png
