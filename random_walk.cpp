@@ -5,30 +5,39 @@
 #include <iostream>
 #include <unistd.h>
 
-const double DIFFUSION_CONSTANT = 0.5;
-
 void print_usage() {
-  std::cout << "usage: ./random_walk.x [-w walker_nr] [-s start_node] [-l length] [-d dimensionfile] graph_filename"
-            << std::endl
-            << "\twalker_nr: Number of walkers that will be run, defaults to 1" << std::endl
-            << "\tstart_node: The node to start at - can only be given for exactly one walker" << std::endl
-            << "\tlength: Length of the random walk, defaults to 100" << std::endl
-            << "\tdimensionfile: Output file to write the result to, defaults to an automatically generated filename "
-               "in data/dim_"
-            << std::endl
-            << "\tgraph_filename: The graph to run the random walker on" << std::endl;
+  std::cout
+      << "usage: ./random_walk.x [-a] [-w walker_nr] [-s start_node] [-l length] [-d diffusion_constant] [-o outfile] "
+         "graph_filename"
+      << std::endl
+      << "  -a appending: Append to dimension file instead of overwriting it" << std::endl
+      << "  -w walker_nr: Number of walkers that will be run, defaults to 1" << std::endl
+      << "  -s start_node: The node to start at - can only be given for exactly one walker" << std::endl
+      << "  -l length: Length of the random walk, defaults to 100" << std::endl
+      << "  -d diffusion_constant: Diffusion constant to regularize osciallations in the spectral dimension, default: "
+         "0.5"
+      << std::endl
+      << "  -o outfile: Output file to write the result to, defaults to an automatically generated filename "
+         "in data/dim_"
+      << std::endl
+      << "  graph_filename: The graph to run the random walker on" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
+  bool file_appending = false;
   int start_node = 0;
   int sigma_max = 100;
   int nr_of_walkers = 1;
+  double diffusion_constant = 0.5;
   std::string dimension_file;
 
   // parse arguments
   int option;
-  while ((option = getopt(argc, argv, ":s:l:w:d:")) != -1) { // get option from the getopt() method
+  while ((option = getopt(argc, argv, "as:l:w:d:o:")) != -1) { // get option from the getopt() method
     switch (option) {
+    case 'a':
+      file_appending = true;
+      break;
     case 's':
       start_node = atoi(optarg);
       break;
@@ -39,6 +48,9 @@ int main(int argc, char *argv[]) {
       nr_of_walkers = atoi(optarg);
       break;
     case 'd':
+      diffusion_constant = atof(optarg);
+      break;
+    case 'o':
       dimension_file = optarg;
       break;
     case '?':
@@ -89,12 +101,20 @@ int main(int argc, char *argv[]) {
   // ==== do the walk ====
   std::cout << "- Writing results to file " << dimension_file << std::endl;
 
+  auto filemode = std::ofstream::out;
+  if (file_appending) {
+    filemode = std::ofstream::out | std::ofstream::app;
+    std::cout << "- Appending to existing file" << std::endl;
+  }
+
   std::ofstream dimfile;
-  dimfile.open(dimension_file.c_str());
-  dimfile << "# dimensions for graph " << graph_filename << std::endl;
-  dimfile << "# nr of walks: " << nr_of_walkers << std::endl;
-  dimfile << "# walk length: " << sigma_max << std::endl;
-  dimfile << "# format: start_node sigma d_spec" << std::endl;
+  dimfile.open(dimension_file.c_str(), filemode);
+  if (!file_appending) {
+    dimfile << "# dimensions for graph " << graph_filename << std::endl;
+    dimfile << "# nr of walks: " << nr_of_walkers << std::endl;
+    dimfile << "# walk length: " << sigma_max << std::endl;
+    dimfile << "# format: start_node sigma d_spec" << std::endl;
+  }
 
 #pragma omp parallel for
   for (int walk = 0; walk < nr_of_walkers; walk++) {
@@ -107,8 +127,8 @@ int main(int argc, char *argv[]) {
 
 #pragma omp critical
     {
-      std::cout << "- Starting walk " << walk << " at node " << start_node << " for " << sigma_max << " steps"
-                << std::endl;
+      std::cout << "- Starting walk " << walk << " at node " << walker_start_node << " for " << sigma_max
+                << " steps with diffusion constant " << diffusion_constant << std::endl;
     }
     std::function<void(int)> progress_monitor = [walk](int sigma) {
       if (sigma % 50 == 0)
@@ -116,7 +136,7 @@ int main(int argc, char *argv[]) {
     };
 
     auto walk_dimensions =
-        spectralDimensionAtNode(G, walker_start_node, sigma_max, progress_monitor, DIFFUSION_CONSTANT);
+        spectralDimensionAtNode(G, walker_start_node, sigma_max, progress_monitor, diffusion_constant);
 
 // ===  write to file  ==
 // We drop the first data point because one cannot compute a derivative at that data point
