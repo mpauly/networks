@@ -7,7 +7,17 @@
 
 const double DIFFUSION_CONSTANT = 0.5;
 
-// void print_usage() { std::cout << }
+void print_usage() {
+  std::cout << "usage: ./random_walk.x [-w walker_nr] [-s start_node] [-l length] [-d dimensionfile] graph_filename"
+            << std::endl
+            << "\twalker_nr: Number of walkers that will be run, defaults to 1" << std::endl
+            << "\tstart_node: The node to start at - can only be given for exactly one walker" << std::endl
+            << "\tlength: Length of the random walk, defaults to 100" << std::endl
+            << "\tdimensionfile: Output file to write the result to, defaults to an automatically generated filename "
+               "in data/dim_"
+            << std::endl
+            << "\tgraph_filename: The graph to run the random walker on" << std::endl;
+}
 
 int main(int argc, char *argv[]) {
   int start_node = 0;
@@ -32,20 +42,22 @@ int main(int argc, char *argv[]) {
       dimension_file = optarg;
       break;
     case '?':
-      printf("unknown option: %c\n", optopt);
-      break;
+      std::cout << "Unknown option: " << optopt << std::endl;
+      print_usage();
+      return 1;
     }
   }
 
   int nr_of_files = 0;
   std::string graph_filename;
-  for (; optind < argc; optind++) { // when some extra arguments are passed
+  for (; optind < argc; optind++) {
     graph_filename = argv[optind];
     nr_of_files++;
   }
 
   if (nr_of_files != 1) {
     std::cout << "Please specify exactly one file" << std::endl;
+    print_usage();
     return 1;
   }
 
@@ -57,6 +69,7 @@ int main(int argc, char *argv[]) {
 
   if (nr_of_walkers > 1 && start_node > 0) {
     std::cerr << "Can't give options for number of walkers and start nodes at the same time" << '\n';
+    print_usage();
     return 1;
   }
 
@@ -117,6 +130,6 @@ int main(int argc, char *argv[]) {
     }
   }
   dimfile.close();
-
+  std::cout << "- Finished walking..." << std::endl;
   return 0;
 }
