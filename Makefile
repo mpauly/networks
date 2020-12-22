@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 CC = g++
 CXXFLAGS = -std=c++17 -O3 -g -fopenmp
 LIBS = -lrt -lsnap
@@ -19,6 +20,10 @@ graph_data:
 	 wget -O - http://snap.stanford.edu/data/roadNet-PA.txt.gz | gunzip -c > graphs/roadNet-PA.txt
 	 wget -O - http://snap.stanford.edu/data/as-skitter.txt.gz | gunzip -c > graphs/as-skitter.txt
 	 wget -O tmp_network.zip http://nrvis.com/download/data/bn/bn-fly-drosophila_medulla_1.zip && unzip -j -d graphs/tmp tmp_network.zip && mv graphs/tmp/bn-fly-drosophila_medulla_1.edges graphs/fly-drosophila_edges.txt && rm -r graphs/tmp && rm tmp_network.zip
+
+diffusion_test:
+	for i in {1..9}; do ./random_walk.x -l 200 -d 0.$$i -s 5050 -o data/2dtest/d0$$i.dat graphs/2d_lattice_100.dat; done
+	python plots/plot_2dtest.py
 
 clean:
 	rm -f *.x

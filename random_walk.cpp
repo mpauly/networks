@@ -15,7 +15,7 @@ void print_usage() {
       << "  -s start_node: The node to start at - can only be given for exactly one walker" << std::endl
       << "  -l length: Length of the random walk, defaults to 100" << std::endl
       << "  -d diffusion_constant: Diffusion constant to regularize osciallations in the spectral dimension, default: "
-         "0.5"
+         "0.5, (1-d) is the probability to stay at the current node"
       << std::endl
       << "  -o outfile: Output file to write the result to, defaults to an automatically generated filename "
          "in data/dim_"

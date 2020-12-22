@@ -16,4 +16,4 @@ for j in range(9):
 plt.legend()
 plt.xlabel('$\\sigma$')
 plt.ylabel('$d_{\\rm spec}$')
-plt.savefig('plots/2dtest.pdf')
+plt.savefig('plots/out/2dtest.pdf')
