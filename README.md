@@ -14,4 +14,4 @@ To download some real-world graph data just run `make graph_data`. This download
 The standard work flow are the three following steps:
   1.) Generating/Downloading a graph via `./make_testgraphs.x` or `./make_datagraphs.x`. This will generate graph files in the `graphs/` subdirectory.
   2.) Executing a random walk via `./random_walk.x` on one of the graph files. See `./random_walk.x -?` for more details on the usage. The result will be a file containing the spectral dimension as a function of the random walker steps in the subfolder `data/`.
-  3.) Plotting the dimension using `python plot_dimension.py data/SomeDimFile.dat` or any other plotting utility of your choice. 
+  3.) Plotting the dimension using `python plot_dimension.py data/SomeDimFile.dat` or any other plotting utility of your choice.

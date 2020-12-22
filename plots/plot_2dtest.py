@@ -11,7 +11,7 @@ for j in range(9):
 
     for node in startnodes:
         mask = (node == startnode) & (~np.isnan(dim))
-    plt.plot(sigma[mask], dim[mask], label='$d=0.{}$'.format(i))
+    plt.plot(sigma[mask], dim[mask], label='$\\delta=0.{}$'.format(i))
 
 plt.legend()
 plt.xlabel('$\\sigma$')
