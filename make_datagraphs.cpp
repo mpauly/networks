@@ -68,6 +68,26 @@ int main(int argc, char *argv[]) {
       std::cout << "  # Nodes: " << nr_of_nodes << "  # Edges: " << nr_of_edges << std::endl;
       save_graph_to_file(G, graph_dir + "europe_osm.dat");
       osmfile.close();
+
+      std::cout << "== Reducing Europe OSM graph ==" << std::endl;
+
+      int nodes_reduced = 0;
+      int node0, node1;
+
+      for (int i = 0; i < nr_of_nodes; i++) {
+        const typename PGraph::TObj::TNodeI NodeI = G->GetNI(i);
+        const int nodeDegree = NodeI.GetOutDeg();
+        if (nodeDegree == 2) {
+          node0 = NodeI.GetOutNId(0);
+          node1 = NodeI.GetOutNId(1);
+          G->DelNode(i);
+          nodes_reduced++;
+          if (!G->IsEdge(node0, node1))
+            G->AddEdge(node0, node1);
+        }
+      }
+      std::cout << "  Reduced by " << nodes_reduced << " nodes - saving";
+      save_graph_to_file(G, graph_dir + "europe_osm_reduced.dat");
     }
   }
 
