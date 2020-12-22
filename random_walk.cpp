@@ -116,14 +116,21 @@ int main(int argc, char *argv[]) {
     dimfile << "# format: start_node sigma d_spec" << std::endl;
   }
 
+  // Determine starting positions - this is outside of the parallel section to avoid complications regarding the
+  // generation of random numbers in different threads
+  std::vector<int> walker_start_nodes(nr_of_walkers);
+  for (int walk = 0; walk < nr_of_walkers; walk++) {
+    if (nr_of_walkers > 1) {
+      walker_start_nodes[walk] = G->GetRndNId();
+    } else {
+      walker_start_nodes[walk] = start_node;
+    }
+  }
+
 #pragma omp parallel for
   for (int walk = 0; walk < nr_of_walkers; walk++) {
     int walker_start_node;
-    if (nr_of_walkers > 1) {
-      walker_start_node = G->GetRndNId();
-    } else {
-      walker_start_node = start_node;
-    }
+    walker_start_node = walker_start_nodes[walk];
 
 #pragma omp critical
     {
