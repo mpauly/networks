@@ -7,7 +7,7 @@ if len(sys.argv) != 2:
     raise ValueError('Please provide one dimension file to plot.')
 
 dimfile = sys.argv[1]
-pngfile = dimfile.replace('data/', 'plots/').replace('.dat', '.png')
+pngfile = dimfile.replace('data/', 'plots/out/').replace('.dat', '.pdf')
 
 print("Reading file {} and writing plot to {}".format(dimfile, pngfile))
 # 1D chain plot

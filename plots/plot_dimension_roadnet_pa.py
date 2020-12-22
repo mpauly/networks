@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 dimfile = 'data/dim_roadnet_pa.dat'
-pngfile = 'plots/dim_roadnet_pa.png'
+pngfile = 'plots/out/dim_roadnet_pa.pdf'
 
 print("Reading file {} and writing plot to {}".format(dimfile, pngfile))
 # 1D chain plot
