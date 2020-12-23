@@ -79,11 +79,10 @@ int main(int argc, char *argv[]) {
 
     // We are reducing the graph because it still contains many long roads composed of many nodes
     // 1) Looping over all edges
-    // 2) If both nodes leading into an edge have degree two we can get rid of one of the nodes and the edge
+    // 2) If both nodes leading into an edge have degree two we can get rid of one of the nodes
     // 3) Rewiring then requires to add one edge between node j and the other child node of i
-    // This looks as if it could be formulated as a loop over child nodes, but I don't know exactly how GetOutNId
-    // behaves if the graph is changing during the loop
     for (int i = 0; i < nr_of_nodes; i++) {
+      // did we already delete the node in a previous step?
       if (!G->IsNode(i))
         continue;
       const typename PGraph::TObj::TNodeI NodeI = G->GetNI(i);
@@ -99,6 +98,7 @@ int main(int argc, char *argv[]) {
         const typename PGraph::TObj::TNodeI NodeJ2 = G->GetNI(j2);
         const int nodeJ2Degree = NodeJ2.GetOutDeg();
 
+        // check if one of the two child nodes has degree two, if so remove it
         int removalNode;
         if (nodeJ1Degree == 2) {
           nodes_removed = true;
@@ -125,6 +125,7 @@ int main(int argc, char *argv[]) {
           nodes_reduced++;
           nodes_removed = true;
 
+          // rewire the edges
           if (childId0 != i && !G->IsEdge(childId0, i)) {
             G->AddEdge(childId0, i);
           }
@@ -138,8 +139,6 @@ int main(int argc, char *argv[]) {
     save_graph_to_file(G, graph_dir + "europe_osm_reduced.dat");
   }
 
-  printf("\n Done writing graphs to ");
-  printf(graph_dir.c_str());
-  printf("\n");
+  std::cout << std::endl << "Done writing graphs to " << graph_dir << std::endl;
   return 0;
 }
