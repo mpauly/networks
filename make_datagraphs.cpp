@@ -135,8 +135,16 @@ int main(int argc, char *argv[]) {
         }
       } while (nodes_removed);
     }
-    std::cout << "  Reduced by " << nodes_reduced << " nodes - saving";
+    std::cout << "  Reduced by " << nodes_reduced << " nodes - saving" << std::endl;
     save_graph_to_file(G, graph_dir + "europe_osm_reduced.dat");
+  }
+
+  // =============== Human Brain ===============================
+  {
+    std::cout << "== Writing Human brain graph ==" << std::endl;
+    PUNGraph G = TSnap::LoadEdgeList<PUNGraph>("graphs/data/brain_edgeslist.txt", 0, 1);
+    // Here we are converting to an undirected graph for now
+    save_graph_to_file(G, graph_dir + "brain.dat");
   }
 
   std::cout << std::endl << "Done writing graphs to " << graph_dir << std::endl;

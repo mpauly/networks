@@ -6,4 +6,4 @@ The OSM dataset is from the '10 DIMACS challenge, see [this webpage]([)https://w
 
 ## Brain
 The brain dataset is from [neurodata.io](https://neurodata.io/mri/) and the dataset BNU1, with the download here [Download](https://mrneurodata.s3.amazonaws.com/data/BNU1/ndmg_0-0-48/graphs/DS72784/sub-0025864_ses-1_dwi_DS72784.gpickle).
-BNU1 refers to Beijing Normal University, scans are of healthy young adults. We convert the gpickle file by taking it apart (there are various issues related to python2 and python3), and writing a new file. 
+BNU1 refers to Beijing Normal University, scans are of healthy young adults. We convert the gpickle file by taking it apart (there are various issues related to python2 and python3), and writing a new file. Note that the edges here come with a weight - for now we simply ignore this weight when converting to a graph.
