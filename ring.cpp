@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   dimfile << "# walk length: " << WALKLENGTH << std::endl;
   dimfile << "# format: nr_of_random_conn diffusion_const sigma d_spec" << std::endl;
 
-  std::function<void(int)> progress_monitor = [](int sigma) {
+  const std::function<void(int)> progress_monitor = [](int sigma) {
     if (sigma % 50 == 0)
       std::cout << "." << std::flush;
   };
