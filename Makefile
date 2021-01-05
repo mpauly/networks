@@ -27,6 +27,9 @@ diffusion_test:
 	for i in {1..9}; do ./random_walk.x -l 200 -d 0.$$i -s 5050 -o data/2dtest/d0$$i.dat graphs/2d_lattice_100.dat; done
 	python plots/plot_2dtest.py
 
+oneDimPlateau:
+	./random_walk.x -s 10 -l 1000 -d 0.25 graphs/1d_ring_26.dat
+
 clean:
 	rm -f *.x
 	rm -f graphs/*.dat

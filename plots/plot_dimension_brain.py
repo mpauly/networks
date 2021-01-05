@@ -2,8 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
-dimfile = "data/dim_roadnet_pa.dat"
-outfile = "plots/out/dim_roadnet_pa.pdf"
+dimfile = "data/dim_brain.dat"
+outfile = "plots/out/dim_brain.pdf"
+
+target_dimension = 3
+hist_scale = 20
 
 print("Reading file {} and writing plot to {}".format(dimfile, outfile))
 # 1D chain plot
@@ -31,10 +34,10 @@ for ind, s in enumerate(sigmas):
 ax1.plot(sigmas, means, c="tab:orange")
 plt.fill_between(sigmas, means + stds, means - stds, alpha=0.2, color="tab:orange")
 
-plt.axhline(2, c="tab:green", ls="--")
+plt.axhline(target_dimension, c="tab:green", ls="--")
 
 plt.xlim([np.min(sigma), np.max(sigma)])
-plt.ylim(1, 3.5)
+plt.ylim(1, 4.5)
 
 plt.xlabel("$\\sigma$")
 plt.ylabel("$d_{\\rm spec}$")
@@ -43,13 +46,13 @@ ax2 = plt.axes([0, 0, 1, 1])
 # Manually set the position and relative size of the inset axes within ax1
 ip = InsetPosition(ax1, [0.65, 0.65, 0.3, 0.3])
 ax2.set_axes_locator(ip)
-ax2.set_xlabel("$d_{\\rm spec}(\\sigma = 450)$")
+ax2.set_xlabel("$d_{{\\rm spec}}(\\sigma = {})$".format(hist_scale))
 ax2.set_ylabel("$n$")
 
-relevant_data = data[data[:, 1] == 450]
-dimensions_450 = relevant_data[:, 2]
-ax2.hist(dimensions_450, bins=np.arange(0.5, 5.5, 0.25))
-ax2.axvline(np.mean(dimensions_450), color="tab:orange")
-ax2.axvline(2, color="tab:green", ls="--")
+relevant_data = data[data[:, 1] == hist_scale]
+dimensions_hist = relevant_data[:, 2]
+ax2.hist(dimensions_hist)
+ax2.axvline(np.mean(dimensions_hist), color="tab:orange")
+ax2.axvline(target_dimension, color="tab:green", ls="--")
 
 plt.savefig(outfile)

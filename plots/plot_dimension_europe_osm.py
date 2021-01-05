@@ -65,11 +65,11 @@ ip = InsetPosition(ax1, [0.65, 0.65, 0.3, 0.3])
 ax2.set_axes_locator(ip)
 ax2.set_xlabel("$d_{\\rm spec}(\\sigma = 450)$")
 ax2.set_ylabel("$n$")
-ax2.axvline(np.mean(dimensions), color="tab:orange")
-ax2.axvline(2, color="tab:green", ls="--")
 
 relevant_data = data[data[:, 1] == 450]
 dimensions_450 = relevant_data[:, 2]
 ax2.hist(dimensions_450, bins=np.arange(0.5, 5.5, 0.25))
+ax2.axvline(np.mean(dimensions_450), color="tab:orange")
+ax2.axvline(2, color="tab:green", ls="--")
 
 plt.savefig(outfile)
