@@ -4,7 +4,7 @@
 #include <string>
 
 #define STARTNODE 0
-#define WALKLENGTH 1000
+#define WALKLENGTH 15000
 
 using namespace std;
 
@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    for (int j = 0; j < 5; j++) {
+    for (int j = 0; j < 7; j++) {
       double diffusion_constant = 0.05 + 0.15 * j;
       std::cout << "delta = " << diffusion_constant << " ";
       auto walk_dimensions = spectralDimensionAtNode(G, STARTNODE, WALKLENGTH, progress_monitor, diffusion_constant);
