@@ -28,16 +28,22 @@ int main(int argc, char *argv[]) {
   {
     std::cout << "== Writing AS Skitter Internet topology graph ==" << std::endl;
     PUNGraph G = TSnap::LoadEdgeList<PUNGraph>("graphs/data/as-skitter.txt", 0, 1);
-    // Here we are converting to an undirected graph for now
     save_graph_to_file(G, graph_dir + "as-skitter.dat");
   }
   // =============== Drosophila brain ===============================
   {
-    std::cout << "== Writing Drosophila Brain graph ==" << std::endl;
+    std::cout << "== Writing Drosophila Brain graph - small version ==" << std::endl;
     PUNGraph G = TSnap::LoadEdgeList<PUNGraph>("graphs/data/fly-drosophila_edges.txt", 0, 1);
-    // Here we are converting to an undirected graph for now
     save_graph_to_file(G, graph_dir + "fly-drosophila.dat");
   }
+  // =============== Drosophila brain large ==========================
+  {
+    std::cout << "== Writing Drosophila Brain graph - large version ==" << std::endl;
+    PUNGraph G = TSnap::LoadEdgeList<PUNGraph>(
+        "graphs/data/exported-traced-adjacencies-v1.2/traced-total-connections.csv", 0, 1, ',');
+    save_graph_to_file(G, graph_dir + "fly-drosophila-large.dat");
+  }
+  return 0;
   // =============== Europe OSM map ===============================
   {
     std::cout << "== Writing Europe OSM graph ==" << std::endl;
