@@ -113,6 +113,7 @@ int main(int argc, char *argv[]) {
     dimfile << "# dimensions for graph " << graph_filename << std::endl;
     dimfile << "# nr of walks: " << nr_of_walkers << std::endl;
     dimfile << "# walk length: " << sigma_max << std::endl;
+    dimfile << "# diffusion const: " << diffusion_constant << std::endl;
     dimfile << "# format: start_node sigma d_spec" << std::endl;
   }
 
