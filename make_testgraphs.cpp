@@ -3,7 +3,7 @@
 #include <string>
 
 #define EDGE_LENGTH 100
-#define INDEXAT2D(x, y) ((x)*EDGE_LENGTH + y)
+#define INDEXAT2D(x, y, edge) ((x)*edge + y)
 #define INDEXAT3D(x, y, z) ((x)*EDGE_LENGTH * EDGE_LENGTH + (y)*EDGE_LENGTH + z)
 
 using namespace std;
@@ -79,6 +79,23 @@ int main(int argc, char *argv[]) {
     save_graph_to_file(G, graph_dir + "1d_ring_" + to_string(ring_length) + "_with_random_" +
                               to_string(nr_of_random_connections) + ".dat");
   }
+  // ================== 2D small lattice ===================================
+  {
+    printf("== Making 2D grid with length %d ==\n", 10);
+    PGraph G = PGraph::TObj::New();
+    const int small_edge = 10;
+    for (int n = 0; n < small_edge * small_edge; n++) {
+      G->AddNode(); // if no parameter is given, node ids are 0,1,...
+    }
+    // Build a square
+    for (int n = 0; n < small_edge - 1; n++) {
+      for (int m = 0; m < small_edge - 1; m++) {
+        G->AddEdge(INDEXAT2D(n, m, small_edge), INDEXAT2D(n + 1, m, small_edge));
+        G->AddEdge(INDEXAT2D(n, m, small_edge), INDEXAT2D(n, m + 1, small_edge));
+      }
+    }
+    save_graph_to_file(G, graph_dir + "2d_lattice_" + to_string(small_edge) + ".dat");
+  }
   // ================== 2D lattice ===================================
   {
     printf("== Making 2D grid with length %d ==\n", EDGE_LENGTH);
@@ -89,8 +106,8 @@ int main(int argc, char *argv[]) {
     // Build a square
     for (int n = 0; n < EDGE_LENGTH - 1; n++) {
       for (int m = 0; m < EDGE_LENGTH - 1; m++) {
-        G->AddEdge(INDEXAT2D(n, m), INDEXAT2D(n + 1, m));
-        G->AddEdge(INDEXAT2D(n, m), INDEXAT2D(n, m + 1));
+        G->AddEdge(INDEXAT2D(n, m, EDGE_LENGTH), INDEXAT2D(n + 1, m, EDGE_LENGTH));
+        G->AddEdge(INDEXAT2D(n, m, EDGE_LENGTH), INDEXAT2D(n, m + 1, EDGE_LENGTH));
       }
     }
     save_graph_to_file(G, graph_dir + "2d_lattice_" + to_string(EDGE_LENGTH) + ".dat");
