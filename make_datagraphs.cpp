@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
         "graphs/data/exported-traced-adjacencies-v1.2/traced-total-connections.csv", 0, 1, ',');
     save_graph_to_file(G, graph_dir + "fly-drosophila-large.dat");
   }
-  return 0;
   // =============== Europe OSM map ===============================
   {
     std::cout << "== Writing Europe OSM graph ==" << std::endl;
