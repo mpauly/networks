@@ -94,8 +94,9 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
   }
   int nodeId, startLevel;
   for (int sigma = 1; sigma < max_depth; sigma++) {
-    // we to something like the five-point stencil for the averaging
-    mean_probability = 0.5 * (return_probability[sigma - 1] + return_probability[sigma + 1]);
+    // we tried varous stencils for the averaging
+    mean_probability = return_probability[sigma];
+    // mean_probability = 0.5 * (return_probability[sigma - 1] + return_probability[sigma + 1]);
     // mean_probability =
     //    0.25 * (return_probability[sigma - 1] + 2 * return_probability[sigma] + return_probability[sigma + 1]);
     // symmetric five-point stencil - cf. wikpedia "Finite difference coefficents"
