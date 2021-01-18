@@ -1,5 +1,6 @@
 #include "Snap.h"
 #include "walker.h"
+#include <algorithm>
 #include <fstream>
 #include <functional>
 #include <iostream>
@@ -98,6 +99,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  std::cout << "  Input graph has " << G->GetNodes() << " nodes and " << G->GetEdges() << " edges" << std::endl;
+
   // ==== do the walk ====
   std::cout << "- Writing results to file " << dimension_file << std::endl;
 
@@ -119,13 +122,16 @@ int main(int argc, char *argv[]) {
 
   // Determine starting positions - this is outside of the parallel section to avoid complications regarding the
   // generation of random numbers in different threads
-  std::vector<int> walker_start_nodes(nr_of_walkers);
-  for (int walk = 0; walk < nr_of_walkers; walk++) {
-    if (nr_of_walkers > 1) {
-      walker_start_nodes[walk] = G->GetRndNId();
-    } else {
-      walker_start_nodes[walk] = start_node;
+  std::vector<int> walker_start_nodes;
+  walker_start_nodes.reserve(nr_of_walkers);
+  if (nr_of_walkers > 1) {
+    while (walker_start_nodes.size() < nr_of_walkers) {
+      int candidate = G->GetRndNId();
+      if (std::find(walker_start_nodes.begin(), walker_start_nodes.end(), candidate) == walker_start_nodes.end())
+        walker_start_nodes.push_back(candidate);
     }
+  } else {
+    walker_start_nodes[0] = start_node;
   }
 
 #pragma omp parallel for
