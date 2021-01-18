@@ -28,6 +28,12 @@ for ind, s in enumerate(sigmas):
     means[ind] = np.mean(dimensions)
     stds[ind] = np.std(dimensions)
 
+print(
+    "Maximum is at {} and has dimension {}".format(
+        sigmas[np.argmax(means)], np.max(means)
+    )
+)
+
 ax1.plot(sigmas, means, c="tab:orange")
 plt.fill_between(sigmas, means + stds, means - stds, alpha=0.2, color="tab:orange")
 
