@@ -149,17 +149,17 @@ int main(int argc, char *argv[]) {
         std::cout << "\t - w" << walk << " sigma = " << sigma << std::endl;
     };
 
-    auto walk_dimensions =
-        spectralDimensionAtNode(G, walker_start_node, sigma_max, progress_monitor, diffusion_constant);
+    RandomWalk random_walk = setupRandomWalk(walker_start_node, diffusion_constant);
+    progressRandomWalk(G, random_walk, sigma_max, progress_monitor);
 
 // ===  write to file  ==
-// We drop the first data point because one cannot compute a derivative at that data point
+// We drop the first data and the last point because one cannot compute a derivative at these data point
 #pragma omp critical
     {
-      for (int sigma = 1; sigma < walk_dimensions.size(); sigma++) {
+      for (int sigma = 1; sigma < random_walk.dimension.size() - 1; sigma++) {
         dimfile << walker_start_node << "\t" << sigma << "\t";
         dimfile << std::fixed << std::setprecision(12);
-        dimfile << walk_dimensions[sigma] << "\n";
+        dimfile << random_walk.dimension[sigma] << "\n";
       }
       std::cout << "- Writing walk " << walk << " to file" << std::endl;
     }
