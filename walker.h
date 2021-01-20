@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-#define WALKER_DEBUG false
+#define WALKER_DEBUG true
 
 struct RandomWalk {
   int start_node;
@@ -43,8 +43,8 @@ template <class PGraph>
 void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps,
                         std::function<void(int)> progress_monitor) {
 
-  walk.return_probability.resize(walk.sigma + nr_of_steps);
-  walk.dimension.resize(walk.sigma + nr_of_steps);
+  walk.return_probability.resize(walk.sigma + nr_of_steps + 1);
+  walk.dimension.resize(walk.sigma + nr_of_steps + 1);
 
   TSnapQueue<int> queue;
   THash<TInt, double> last_lvl_probabilities = walk.lvl_probabilities;
@@ -58,7 +58,7 @@ void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps,
     queue.Push(it.GetKey());
   }
 
-  for (int sigma = walk.sigma + 1; sigma < walk.sigma + nr_of_steps; sigma++) {
+  for (int sigma = walk.sigma + 1; sigma < walk.sigma + nr_of_steps + 1; sigma++) {
     walk.lvl_probabilities.Clr();
 
     if (WALKER_DEBUG)
@@ -118,9 +118,10 @@ void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps,
       walk.dimension[sigma - 1] =
           -2.0 * ((double)sigma - 1) / walk.return_probability[sigma - 1] * probability_derivative;
       if (WALKER_DEBUG)
-        printf("\n d=%f, %d", walk.dimension[sigma - 1], walk.dimension.size());
+        printf("\n d=%f", walk.dimension[sigma - 1]);
     }
   }
+  walk.sigma += nr_of_steps;
 }
 
 // Convenience function without progress monitor
