@@ -1,10 +1,14 @@
 #include "Snap.h"
 #include "walker.h"
 #include <algorithm>
+#include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <unistd.h>
+
+namespace fs = std::filesystem;
 
 void print_usage() {
   std::cout
@@ -26,6 +30,7 @@ void print_usage() {
 
 int main(int argc, char *argv[]) {
   bool file_appending = false;
+  bool export_final_state = false;
   int start_node = 0;
   int sigma_max = 100;
   int nr_of_walkers = 1;
@@ -34,10 +39,13 @@ int main(int argc, char *argv[]) {
 
   // parse arguments
   int option;
-  while ((option = getopt(argc, argv, "as:l:w:d:o:")) != -1) { // get option from the getopt() method
+  while ((option = getopt(argc, argv, "aes:l:w:d:o:")) != -1) { // get option from the getopt() method
     switch (option) {
     case 'a':
       file_appending = true;
+      break;
+    case 'e':
+      export_final_state = true;
       break;
     case 's':
       start_node = atoi(optarg);
@@ -156,6 +164,21 @@ int main(int argc, char *argv[]) {
 // We drop the first data and the last point because one cannot compute a derivative at these data point
 #pragma omp critical
     {
+      if (export_final_state) {
+        std::cout << "- Exporting final state for walk " << walk << std::endl;
+        std::string filename = graph_filename;
+        filename = dimension_file.replace(filename.find("graphs/"), sizeof("graphs/") - 1, "walks/");
+        filename = dimension_file.replace(filename.find(".dat"), sizeof(".dat") - 1, "/");
+        if (!fs::is_directory(filename) || !fs::exists(filename)) {
+          fs::create_directory(filename);
+        }
+        filename += std::to_string(walk) + ".dat";
+        std::string comment =
+            "Random walk started at " + std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+        exportRandomWalkToFile(random_walk, filename, comment);
+      }
+
       for (int sigma = 1; sigma < random_walk.dimension.size() - 1; sigma++) {
         dimfile << walker_start_node << "\t" << sigma << "\t";
         dimfile << std::fixed << std::setprecision(12);

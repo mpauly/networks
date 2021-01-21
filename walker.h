@@ -131,8 +131,9 @@ template <class PGraph> void progressRandomWalk(const PGraph &Graph, RandomWalk 
   progressRandomWalk(Graph, walk, nr_of_steps, progress_monitor);
 }
 
-void exportRandomWalkToFile(RandomWalk walk, std::string filename) {
+void exportRandomWalkToFile(RandomWalk walk, std::string filename, std::string comment) {
   std::ofstream outfile(filename, std::ios::out);
+  outfile << comment << std::endl;
   outfile << "start_node\t" << walk.start_node << "\nsigma\t" << walk.sigma << "\ndiffusion_constant\t"
           << walk.diffusion_constant << std::endl;
   outfile << "\n\ndimension" << std::endl;
@@ -159,6 +160,8 @@ RandomWalk importRandomWalkFromFile(std::string filename) {
   std::string line;
   std::string key;
   std::string value;
+
+  std::getline(infile, line);
 
   for (int i = 0; i < 3; i++) {
     std::getline(infile, line);
