@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
     progressRandomWalk(G, random_walk, sigma_max, progress_monitor);
 
 // ===  write to file  ==
-// We drop the first data and the last point because one cannot compute a derivative at these data point
+// We drop the first and the last point because one cannot compute a derivative at these data point
 #pragma omp critical
     {
       if (export_final_state) {
@@ -188,8 +188,7 @@ int main(int argc, char *argv[]) {
         if (!fs::is_directory(walk_dirname) || !fs::exists(walk_dirname)) {
           fs::create_directory(walk_dirname);
         }
-        std::string comment =
-            "Random walk saved at " + std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::string comment = "Random walk of graph " + graph_filename;
 
         exportRandomWalkToFile(random_walk, walk_dirname + std::to_string(walk) + ".dat", comment);
       }
