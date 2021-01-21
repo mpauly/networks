@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-#define WALKER_DEBUG true
+#define WALKER_DEBUG false
 
 struct RandomWalk {
   int start_node;
@@ -27,6 +27,7 @@ RandomWalk setupRandomWalk(const int &start_node, const double diffusion_constan
   return walk;
 }
 
+// legacy wrapper
 template <class PGraph>
 std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &start_node, const int &max_depth,
                                             std::function<void(int)> progress_monitor,
@@ -128,4 +129,91 @@ void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps,
 template <class PGraph> void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps) {
   std::function<void(int)> progress_monitor = [](int sigma) {};
   progressRandomWalk(Graph, walk, nr_of_steps, progress_monitor);
+}
+
+void exportRandomWalkToFile(RandomWalk walk, std::string filename) {
+  std::ofstream outfile(filename, std::ios::out);
+  outfile << "start_node\t" << walk.start_node << "\nsigma\t" << walk.sigma << "\ndiffusion_constant\t"
+          << walk.diffusion_constant << std::endl;
+  outfile << "\n\ndimension" << std::endl;
+  for (int i = 0; i < walk.sigma; i++) {
+    outfile << walk.dimension[i] << "\t";
+  }
+  outfile << std::fixed << std::setprecision(20);
+  outfile << std::scientific;
+  outfile << "\n\nreturn_probability" << std::endl;
+  for (int i = 0; i < walk.sigma; i++) {
+    outfile << walk.return_probability[i] << "\t";
+  }
+  outfile << "\n\ndistribution\n";
+  outfile << std::setprecision(50);
+  for (auto it = walk.lvl_probabilities.BegI(); it < walk.lvl_probabilities.EndI(); it++) {
+    outfile << it.GetKey() << "\t" << it.GetDat() << "\n";
+  }
+  outfile.close();
+}
+
+RandomWalk importRandomWalkFromFile(std::string filename) {
+  std::ifstream infile(filename, std::ios::in);
+  RandomWalk walk;
+  std::string line;
+  std::string key;
+  std::string value;
+
+  for (int i = 0; i < 3; i++) {
+    std::getline(infile, line);
+    std::stringstream ss(line);
+    std::getline(ss, key, '\t');
+    std::getline(ss, value, '\t');
+    if (key == "start_node")
+      walk.start_node = std::stoi(value);
+    if (key == "diffusion_constant")
+      walk.diffusion_constant = std::stod(value);
+    if (key == "sigma")
+      walk.sigma = std::stoi(value);
+  }
+  walk.return_probability.resize(walk.sigma);
+  walk.dimension.resize(walk.sigma);
+  {
+    while (line != "dimension")
+      std::getline(infile, line);
+
+    std::getline(infile, line);
+    std::stringstream ss(line);
+    int i = 0;
+    while (std::getline(ss, value, '\t')) {
+      walk.dimension[i] = std::stod(value);
+      i++;
+    }
+    if (i != walk.sigma) {
+      throw std::invalid_argument("Inconsistent input file");
+    }
+  }
+  {
+    while (line != "return_probability")
+      std::getline(infile, line);
+
+    std::getline(infile, line);
+    std::stringstream ss(line);
+    int i = 0;
+    while (std::getline(ss, value, '\t')) {
+      walk.return_probability[i] = std::stod(value);
+      i++;
+    }
+    if (i != walk.sigma) {
+      throw std::invalid_argument("Inconsistent input file");
+    }
+  }
+  while (line != "distribution")
+    std::getline(infile, line);
+
+  while (std::getline(infile, line)) {
+    std::stringstream ss(line);
+    std::getline(ss, key, '\t');
+    std::getline(ss, value, '\t');
+    walk.lvl_probabilities.AddDat(std::stoi(key), std::stod(value));
+  }
+
+  infile.close();
+  return walk;
 }
