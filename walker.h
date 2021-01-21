@@ -137,13 +137,13 @@ void exportRandomWalkToFile(RandomWalk walk, std::string filename, std::string c
   outfile << "start_node\t" << walk.start_node << "\nsigma\t" << walk.sigma << "\ndiffusion_constant\t"
           << walk.diffusion_constant << std::endl;
   outfile << "\n\ndimension" << std::endl;
-  for (int i = 0; i < walk.sigma; i++) {
+  for (int i = 0; i < walk.sigma + 1; i++) {
     outfile << walk.dimension[i] << "\t";
   }
   outfile << std::fixed << std::setprecision(20);
   outfile << std::scientific;
   outfile << "\n\nreturn_probability" << std::endl;
-  for (int i = 0; i < walk.sigma; i++) {
+  for (int i = 0; i < walk.sigma + 1; i++) {
     outfile << walk.return_probability[i] << "\t";
   }
   outfile << "\n\ndistribution\n";
@@ -175,8 +175,8 @@ RandomWalk importRandomWalkFromFile(std::string filename) {
     if (key == "sigma")
       walk.sigma = std::stoi(value);
   }
-  walk.return_probability.resize(walk.sigma);
-  walk.dimension.resize(walk.sigma);
+  walk.return_probability.resize(walk.sigma + 1);
+  walk.dimension.resize(walk.sigma + 1);
   {
     while (line != "dimension")
       std::getline(infile, line);
@@ -188,7 +188,7 @@ RandomWalk importRandomWalkFromFile(std::string filename) {
       walk.dimension[i] = std::stod(value);
       i++;
     }
-    if (i != walk.sigma) {
+    if (i != walk.sigma + 1) {
       throw std::invalid_argument("Inconsistent input file");
     }
   }
@@ -203,7 +203,7 @@ RandomWalk importRandomWalkFromFile(std::string filename) {
       walk.return_probability[i] = std::stod(value);
       i++;
     }
-    if (i != walk.sigma) {
+    if (i != walk.sigma + 1) {
       throw std::invalid_argument("Inconsistent input file");
     }
   }

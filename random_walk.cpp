@@ -12,10 +12,13 @@ namespace fs = std::filesystem;
 
 void print_usage() {
   std::cout
-      << "usage: ./random_walk.x [-a] [-w walker_nr] [-s start_node] [-l length] [-d diffusion_constant] [-o outfile] "
-         "graph_filename"
+      << "usage: ./random_walk.x [-a] [-e] [-c] [-w walker_nr] [-s start_node] [-l length] [-d diffusion_constant] [-o "
+         "outfile] graph_filename"
       << std::endl
       << "  -a appending: Append to dimension file instead of overwriting it" << std::endl
+      << "  -e export: Export final state of the walker such that the walk can be continued in the future" << std::endl
+      << "  -c continue: Continue -w existing walks for -l steps - ignores -s and -d - this also implies -e"
+      << std::endl
       << "  -w walker_nr: Number of walkers that will be run, defaults to 1" << std::endl
       << "  -s start_node: The node to start at - can only be given for exactly one walker" << std::endl
       << "  -l length: Length of the random walk, defaults to 100" << std::endl
@@ -31,6 +34,7 @@ void print_usage() {
 int main(int argc, char *argv[]) {
   bool file_appending = false;
   bool export_final_state = false;
+  bool continue_walk = false;
   int start_node = 0;
   int sigma_max = 100;
   int nr_of_walkers = 1;
@@ -39,12 +43,16 @@ int main(int argc, char *argv[]) {
 
   // parse arguments
   int option;
-  while ((option = getopt(argc, argv, "aes:l:w:d:o:")) != -1) { // get option from the getopt() method
+  while ((option = getopt(argc, argv, "aecs:l:w:d:o:")) != -1) { // get option from the getopt() method
     switch (option) {
     case 'a':
       file_appending = true;
       break;
     case 'e':
+      export_final_state = true;
+      break;
+    case 'c':
+      continue_walk = true;
       export_final_state = true;
       break;
     case 's':
@@ -93,6 +101,10 @@ int main(int argc, char *argv[]) {
     print_usage();
     return 1;
   }
+
+  std::string walk_dirname = graph_filename;
+  walk_dirname = walk_dirname.replace(walk_dirname.find("graphs/"), sizeof("graphs/") - 1, "walks/");
+  walk_dirname = walk_dirname.replace(walk_dirname.find(".dat"), sizeof(".dat") - 1, "/");
 
   // =====  load the graph  ========
   typedef PUNGraph PGraph; // undirected graph
@@ -144,20 +156,27 @@ int main(int argc, char *argv[]) {
 
 #pragma omp parallel for
   for (int walk = 0; walk < nr_of_walkers; walk++) {
-    int walker_start_node;
-    walker_start_node = walker_start_nodes[walk];
+    RandomWalk random_walk;
 
-#pragma omp critical
-    {
-      std::cout << "- Starting walk " << walk << " at node " << walker_start_node << " for " << sigma_max
-                << " steps with diffusion constant " << diffusion_constant << std::endl;
-    }
     std::function<void(int)> progress_monitor = [walk](int sigma) {
       if (sigma % 50 == 0)
         std::cout << "\t - w" << walk << " sigma = " << sigma << std::endl;
     };
 
-    RandomWalk random_walk = setupRandomWalk(walker_start_node, diffusion_constant);
+#pragma omp critical
+    {
+      if (continue_walk) {
+        std::cout << "- Continuing Walk ";
+        random_walk = importRandomWalkFromFile(walk_dirname + std::to_string(walk) + ".dat");
+      } else {
+        std::cout << "- Starting Walk ";
+        random_walk = setupRandomWalk(walker_start_nodes[walk], diffusion_constant);
+      }
+
+      std::cout << walk << " started at node " << random_walk.start_node << " and will walk for " << sigma_max
+                << " steps with diffusion constant " << diffusion_constant << std::endl;
+    }
+
     progressRandomWalk(G, random_walk, sigma_max, progress_monitor);
 
 // ===  write to file  ==
@@ -166,21 +185,17 @@ int main(int argc, char *argv[]) {
     {
       if (export_final_state) {
         std::cout << "- Exporting final state for walk " << walk << std::endl;
-        std::string filename = graph_filename;
-        filename = dimension_file.replace(filename.find("graphs/"), sizeof("graphs/") - 1, "walks/");
-        filename = dimension_file.replace(filename.find(".dat"), sizeof(".dat") - 1, "/");
-        if (!fs::is_directory(filename) || !fs::exists(filename)) {
-          fs::create_directory(filename);
+        if (!fs::is_directory(walk_dirname) || !fs::exists(walk_dirname)) {
+          fs::create_directory(walk_dirname);
         }
-        filename += std::to_string(walk) + ".dat";
         std::string comment =
-            "Random walk started at " + std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            "Random walk saved at " + std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-        exportRandomWalkToFile(random_walk, filename, comment);
+        exportRandomWalkToFile(random_walk, walk_dirname + std::to_string(walk) + ".dat", comment);
       }
 
       for (int sigma = 1; sigma < random_walk.dimension.size() - 1; sigma++) {
-        dimfile << walker_start_node << "\t" << sigma << "\t";
+        dimfile << random_walk.start_node << "\t" << sigma << "\t";
         dimfile << std::fixed << std::setprecision(12);
         dimfile << random_walk.dimension[sigma] << "\n";
       }
