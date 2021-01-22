@@ -38,12 +38,13 @@ int main(int argc, char *argv[]) {
   int start_node = 0;
   int sigma_max = 100;
   int nr_of_walkers = 1;
+  int walker_min_id = 0;
   double diffusion_constant = 0.5;
   std::string dimension_file;
 
   // parse arguments
   int option;
-  while ((option = getopt(argc, argv, "aecs:l:w:d:o:")) != -1) { // get option from the getopt() method
+  while ((option = getopt(argc, argv, "aecs:l:W:w:d:o:")) != -1) { // get option from the getopt() method
     switch (option) {
     case 'a':
       file_appending = true;
@@ -60,6 +61,9 @@ int main(int argc, char *argv[]) {
       break;
     case 'l':
       sigma_max = atoi(optarg);
+      break;
+    case 'W':
+      walker_min_id = atoi(optarg);
       break;
     case 'w':
       nr_of_walkers = atoi(optarg);
@@ -142,10 +146,13 @@ int main(int argc, char *argv[]) {
 
   // Determine starting positions - this is outside of the parallel section to avoid complications regarding the
   // generation of random numbers in different threads
+  // in case walker_min_id > 0 we are generating more than the needed starting positions - the snap RNG is
+  // deterministic, i.e. we are first reproducing the start positions of existing walks and then generating new starting
+  // positions
   std::vector<int> walker_start_nodes;
   walker_start_nodes.reserve(nr_of_walkers);
   if (nr_of_walkers > 1) {
-    while (walker_start_nodes.size() < nr_of_walkers) {
+    while (walker_start_nodes.size() < walker_min_id + nr_of_walkers) {
       int candidate = G->GetRndNId();
       if (std::find(walker_start_nodes.begin(), walker_start_nodes.end(), candidate) == walker_start_nodes.end())
         walker_start_nodes.push_back(candidate);
@@ -155,7 +162,7 @@ int main(int argc, char *argv[]) {
   }
 
 #pragma omp parallel for
-  for (int walk = 0; walk < nr_of_walkers; walk++) {
+  for (int walk = walker_min_id; walk < walker_min_id + nr_of_walkers; walk++) {
     RandomWalk random_walk;
 
     std::function<void(int)> progress_monitor = [walk](int sigma) {
