@@ -12,7 +12,8 @@ namespace fs = std::filesystem;
 
 void print_usage() {
   std::cout
-      << "usage: ./random_walk.x [-a] [-e] [-c] [-w walker_nr] [-s start_node] [-l length] [-d diffusion_constant] [-o "
+      << "usage: ./random_walk.x [-a] [-e] [-c] [-w walker_nr] [-W walker_min_id] [-s start_node] [-l length] [-d "
+         "diffusion_constant] [-o "
          "outfile] graph_filename"
       << std::endl
       << "  -a appending: Append to dimension file instead of overwriting it" << std::endl
@@ -20,6 +21,9 @@ void print_usage() {
       << "  -c continue: Continue -w existing walks for -l steps - ignores -s and -d - this also implies -e"
       << std::endl
       << "  -w walker_nr: Number of walkers that will be run, defaults to 1" << std::endl
+      << "  -W walker_min_id: the numbering of the walkers starts at this id - this allows to add random walks to an "
+         "existing ensemble"
+      << std::endl
       << "  -s start_node: The node to start at - can only be given for exactly one walker" << std::endl
       << "  -l length: Length of the random walk, defaults to 100" << std::endl
       << "  -d diffusion_constant delta: Diffusion constant to regularize osciallations in the spectral dimension, "
