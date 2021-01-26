@@ -6,7 +6,7 @@
 #define STARTNODE_REGULAR 0
 #define WALKLENGTH_REGULAR 15000
 #define WALKLENGTH_RANDOM 500
-#define WALKLENGTH_RANDOM2 1000
+#define WALKLENGTH_RANDOM2 15000
 
 using namespace std;
 
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
     typedef PUNGraph PGraph; // undirected graph
 
     const int ring_length = 1000;
-    const int max_length = 20;
+    const int max_length = 10;
     const double diffusion_constant = 0.75;
 
     double random_connections[4] = {0, 50, 100, 200};
@@ -142,6 +142,7 @@ int main(int argc, char *argv[]) {
     dimfile << "# diffusion const: " << diffusion_constant << std::endl;
     dimfile << "# format: nr_of_random_conn sigma d_spec" << std::endl;
 
+#pragma omp parallel for
     for (const double &nr_of_random_connections : random_connections) {
       std::cout << "== Making 1D ring with length " << ring_length << " and " << nr_of_random_connections
                 << " random connections ==" << std::endl;
@@ -165,7 +166,6 @@ int main(int argc, char *argv[]) {
           continue;
         // this if condition checks if an edge already exists
         if (G->AddEdge(NId1, NId2) != -2) {
-          std::cout << NId1 << " - " << NId2 << " | ";
           edges_added++;
         }
       }
@@ -183,13 +183,16 @@ int main(int argc, char *argv[]) {
       for (int i = 0; i < WALKLENGTH_RANDOM2; i++)
         walk_dimensions[i] = walk_dimensions[i] / ring_length;
 
-      // We drop the first data point because one cannot compute a derivative at that data point
-      for (int sigma = 1; sigma < walk_dimensions.size(); sigma++) {
-        dimfile << nr_of_random_connections << "\t" << sigma << "\t";
-        dimfile << std::fixed << std::setprecision(12);
-        dimfile << walk_dimensions[sigma] << "\n";
+// We drop the first data point because one cannot compute a derivative at that data point
+#pragma omp critical
+      {
+        for (int sigma = 1; sigma < walk_dimensions.size(); sigma++) {
+          dimfile << nr_of_random_connections << "\t" << sigma << "\t";
+          dimfile << std::fixed << std::setprecision(12);
+          dimfile << walk_dimensions[sigma] << "\n";
+        }
+        std::cout << std::endl;
       }
-      std::cout << std::endl;
     }
     dimfile.close();
   }
