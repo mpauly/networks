@@ -6,7 +6,7 @@
 #define STARTNODE_REGULAR 0
 #define WALKLENGTH_REGULAR 15000
 #define WALKLENGTH_RANDOM 500
-#define WALKLENGTH_RANDOM2 15000
+#define WALKLENGTH_RANDOM2 30000
 
 using namespace std;
 
@@ -129,9 +129,9 @@ int main(int argc, char *argv[]) {
 
     const int ring_length = 1000;
     const int max_length = 10;
-    const double diffusion_constant = 0.75;
+    const double diffusion_constant = 0.5;
 
-    double random_connections[4] = {0, 50, 100, 200};
+    std::vector<int> random_connections = {0, 50, 100, 200};
 
     std::ofstream dimfile;
     dimfile.open("data/dim_ring_random_maxlength.dat", std::ofstream::out);
@@ -143,7 +143,8 @@ int main(int argc, char *argv[]) {
     dimfile << "# format: nr_of_random_conn sigma d_spec" << std::endl;
 
 #pragma omp parallel for
-    for (const double &nr_of_random_connections : random_connections) {
+    for (int ran_con_count = 0; ran_con_count < random_connections.size(); ran_con_count++) {
+      int nr_of_random_connections = random_connections.at(ran_con_count);
       std::cout << "== Making 1D ring with length " << ring_length << " and " << nr_of_random_connections
                 << " random connections ==" << std::endl;
 
