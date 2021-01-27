@@ -23,7 +23,7 @@ TEMPLATE_SERIAL = """
 OMP_NUM_THREADS=$PBS_NUM_PPN
 export OMP_NUM_THREADS
 cd {base_dir}
-log_file = {base_dir}/logs/{name}.log
+log_file={base_dir}/logs/{name}.log
 echo "------------------------------------------------------------------------" >> $log_file
 echo "Job started on" `date`  >> $log_file
 echo "------------------------------------------------------------------------"  >> $log_file
