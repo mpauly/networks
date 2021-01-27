@@ -18,18 +18,19 @@ TEMPLATE_SERIAL = """
 #PBS -l mem=8gb,vmem=8gb
 #PBS -l walltime=72:00:00
 #PBS -N {name}_{batch_id}
-#PBS -o {base_dir}/logs/{name}_{batch_id}.log
+#PBS -o {base_dir}/logs/{name}_{batch_id}.run.log
 #PBS -e {base_dir}/logs/{name}_{batch_id}.err.log
 OMP_NUM_THREADS=$PBS_NUM_PPN
 export OMP_NUM_THREADS
 cd {base_dir}
-echo "------------------------------------------------------------------------"
-echo "Job started on" `date`
-echo "------------------------------------------------------------------------"
-nice -19 ./random_walk.x {continue_flag} -W {start_walk} -w {batch_size} -l {walk_length} graphs/{name}.dat
-echo "------------------------------------------------------------------------"
-echo "Job ended on" `date`
-echo "------------------------------------------------------------------------"
+log_file = {base_dir}/logs/{name}.log
+echo "------------------------------------------------------------------------" >> $log_file
+echo "Job started on" `date`  >> $log_file
+echo "------------------------------------------------------------------------"  >> $log_file
+nice -19 ./random_walk.x {continue_flag} -W {start_walk} -w {batch_size} -l {walk_length} graphs/{name}.dat  >> $log_file
+echo "------------------------------------------------------------------------"  >> $log_file
+echo "Job ended on" `date`  >> $log_file
+echo "------------------------------------------------------------------------"  >> $log_file
 """
 
 
