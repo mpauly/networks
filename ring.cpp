@@ -1,6 +1,8 @@
 #include "Snap.h"
-#include "walker.h"
+#include "walker/base.h"
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <string>
 
 #define STARTNODE_REGULAR 0
@@ -47,8 +49,8 @@ int main(int argc, char *argv[]) {
       std::cout << "== Making 1D regular ring with length " << ring_length << " and delta = " << diffusion_constant
                 << " ==" << std::endl;
 
-      auto walk_dimensions =
-          spectralDimensionAtNode(G, STARTNODE_REGULAR, WALKLENGTH_REGULAR, progress_monitor, diffusion_constant);
+      auto walk_dimensions = walker::spectralDimensionAtNode(G, STARTNODE_REGULAR, WALKLENGTH_REGULAR, progress_monitor,
+                                                             diffusion_constant);
 
       // We drop the first data point because one cannot compute a derivative at that data point
       for (int sigma = 1; sigma < walk_dimensions.size(); sigma++) {
@@ -106,7 +108,7 @@ int main(int argc, char *argv[]) {
         if (start % 10 == 0)
           std::cout << " start node = " << start << std::endl;
         std::vector<double> this_walk_dimensions =
-            spectralDimensionAtNode(G, start, WALKLENGTH_RANDOM, progress_monitor, params.diffusion_constant);
+            walker::spectralDimensionAtNode(G, start, WALKLENGTH_RANDOM, progress_monitor, params.diffusion_constant);
         for (int i = 0; i < WALKLENGTH_RANDOM; i++)
           walk_dimensions[i] += this_walk_dimensions[i];
       }
@@ -177,7 +179,7 @@ int main(int argc, char *argv[]) {
         if (start % 100 == 0)
           std::cout << " start node = " << start << std::endl;
         std::vector<double> this_walk_dimensions =
-            spectralDimensionAtNode(G, start, WALKLENGTH_RANDOM2, progress_monitor, diffusion_constant);
+            walker::spectralDimensionAtNode(G, start, WALKLENGTH_RANDOM2, progress_monitor, diffusion_constant);
         for (int i = 0; i < WALKLENGTH_RANDOM2; i++)
           walk_dimensions[i] += this_walk_dimensions[i];
       }

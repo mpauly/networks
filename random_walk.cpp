@@ -1,5 +1,6 @@
 #include "Snap.h"
-#include "walker.h"
+#include "walker/base.h"
+#include "walker/io.h"
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
@@ -168,7 +169,7 @@ int main(int argc, char *argv[]) {
 
 #pragma omp parallel for
   for (int walk = walker_min_id; walk < walker_min_id + nr_of_walkers; walk++) {
-    RandomWalk random_walk;
+    walker::RandomWalk random_walk;
 
     std::function<void(int)> progress_monitor = [walk](int sigma) {
       if (sigma % 50 == 0)
@@ -179,11 +180,11 @@ int main(int argc, char *argv[]) {
     {
       if (continue_walk) {
         std::cout << "- Continuing Walk ";
-        random_walk = importRandomWalkFromFile(walk_dirname + std::to_string(walk) + ".dat");
+        random_walk = walker::importRandomWalkFromFile(walk_dirname + std::to_string(walk) + ".dat");
         // random_walk = importRandomWalkFromBinaryFile(walk_dirname + std::to_string(walk) + ".bin.dat");
       } else {
         std::cout << "- Starting Walk ";
-        random_walk = setupRandomWalk(walker_start_nodes[walk], diffusion_constant);
+        random_walk = walker::setupRandomWalk(walker_start_nodes[walk], diffusion_constant);
       }
 
       std::cout << walk << " started at node " << random_walk.start_node << " and will walk for " << sigma_max
@@ -203,7 +204,7 @@ int main(int argc, char *argv[]) {
         }
         std::string comment = "Random walk of graph " + graph_filename;
 
-        exportRandomWalkToBinaryFile(random_walk, walk_dirname + std::to_string(walk) + ".bin.dat");
+        walker::exportRandomWalkToBinaryFile(random_walk, walk_dirname + std::to_string(walk) + ".bin.dat");
       }
 
       for (int sigma = 1; sigma < random_walk.dimension.size() - 1; sigma++) {
