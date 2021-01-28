@@ -4,7 +4,6 @@
 #include "base.h"
 #include <fstream>
 #include <iomanip>
-#include <iostream>
 
 namespace walker {
 
@@ -33,18 +32,17 @@ void exportRandomWalkToFile(RandomWalk walk, std::string filename, std::string c
 
 void exportRandomWalkToBinaryFile(RandomWalk walk, std::string filename) {
   std::ofstream outfile(filename, std::ios::out | std::ios::binary);
-  outfile.write(reinterpret_cast<const char *>(&walk.start_node), sizeof(int));
-  outfile.write(reinterpret_cast<const char *>(&walk.sigma), sizeof(int));
-  outfile.write(reinterpret_cast<const char *>(&walk.diffusion_constant), sizeof(double));
-
+  outfile.write(reinterpret_cast<const char *>(&walk.start_node), sizeof(walk.start_node));
+  outfile.write(reinterpret_cast<const char *>(&walk.sigma), sizeof(walk.sigma));
+  outfile.write(reinterpret_cast<const char *>(&walk.diffusion_constant), sizeof(walk.diffusion_constant));
   for (int i = 0; i < walk.sigma + 1; i++) {
-    outfile.write(reinterpret_cast<const char *>(&walk.dimension[i]), sizeof(double));
+    outfile.write(reinterpret_cast<const char *>(&walk.dimension.at(i)), sizeof(double));
   }
   for (int i = 0; i < walk.sigma + 1; i++) {
-    outfile.write(reinterpret_cast<const char *>(&walk.return_probability[i]), sizeof(double));
+    outfile.write(reinterpret_cast<const char *>(&walk.return_probability.at(i)), sizeof(double));
   }
   int length = walk.lvl_probabilities.Len();
-  outfile.write(reinterpret_cast<const char *>(&length), sizeof(int));
+  outfile.write(reinterpret_cast<const char *>(&length), sizeof(length));
   for (auto it = walk.lvl_probabilities.BegI(); it < walk.lvl_probabilities.EndI(); it++) {
     outfile.write(reinterpret_cast<const char *>(&it.GetKey()), sizeof(int));
     outfile.write(reinterpret_cast<const char *>(&it.GetDat()), sizeof(double));
@@ -123,9 +121,9 @@ RandomWalk importRandomWalkFromBinaryFile(std::string filename, bool skip_level_
   std::ifstream infile(filename, std::ios::in | std::ios::binary);
   RandomWalk walk;
 
-  infile.read(reinterpret_cast<char *>(&(walk.start_node)), sizeof(int));
-  infile.read(reinterpret_cast<char *>(&(walk.sigma)), sizeof(int));
-  infile.read(reinterpret_cast<char *>(&(walk.diffusion_constant)), sizeof(double));
+  infile.read(reinterpret_cast<char *>(&walk.start_node), sizeof(walk.start_node));
+  infile.read(reinterpret_cast<char *>(&walk.sigma), sizeof(walk.sigma));
+  infile.read(reinterpret_cast<char *>(&walk.diffusion_constant), sizeof(walk.diffusion_constant));
 
   walk.return_probability.resize(walk.sigma + 1);
   walk.dimension.resize(walk.sigma + 1);
@@ -138,8 +136,8 @@ RandomWalk importRandomWalkFromBinaryFile(std::string filename, bool skip_level_
   for (int i = 0; i < walk.sigma + 1; i++) {
     infile.read(reinterpret_cast<char *>(&(walk.return_probability[i])), sizeof(double));
   }
+  int length;
   if (!skip_level_probs) {
-    int length;
     infile.read(reinterpret_cast<char *>(&length), sizeof(int));
     int key;
     double value;
@@ -150,6 +148,7 @@ RandomWalk importRandomWalkFromBinaryFile(std::string filename, bool skip_level_
     }
   }
   infile.close();
+
   return walk;
 }
 

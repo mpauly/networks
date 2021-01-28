@@ -180,8 +180,8 @@ int main(int argc, char *argv[]) {
     {
       if (continue_walk) {
         std::cout << "- Continuing Walk ";
-        random_walk = walker::importRandomWalkFromFile(walk_dirname + std::to_string(walk) + ".dat");
-        // random_walk = importRandomWalkFromBinaryFile(walk_dirname + std::to_string(walk) + ".bin.dat");
+        random_walk = walker::importRandomWalkFromBinaryFile(walk_dirname + std::to_string(walk) + ".bin.dat");
+        // random_walk = walker::importRandomWalkFromFile(walk_dirname + std::to_string(walk) + ".dat");
       } else {
         std::cout << "- Starting Walk ";
         random_walk = walker::setupRandomWalk(walker_start_nodes[walk], diffusion_constant);
