@@ -154,10 +154,11 @@ int main(int argc, char *argv[]) {
   // deterministic, i.e. we are first reproducing the start positions of existing walks and then generating new starting
   // positions
   std::vector<int> walker_start_nodes;
-  walker_start_nodes.reserve(nr_of_walkers);
-  if (nr_of_walkers > 1) {
+  walker_start_nodes.reserve(walker_min_id + nr_of_walkers);
+  if (nr_of_walkers > 1 && !continue_walk) {
     while (walker_start_nodes.size() < walker_min_id + nr_of_walkers) {
       int candidate = G->GetRndNId();
+      // is that start node already in our pool of start nodes?
       if (std::find(walker_start_nodes.begin(), walker_start_nodes.end(), candidate) == walker_start_nodes.end())
         walker_start_nodes.push_back(candidate);
     }
