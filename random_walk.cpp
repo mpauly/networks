@@ -180,6 +180,7 @@ int main(int argc, char *argv[]) {
       if (continue_walk) {
         std::cout << "- Continuing Walk ";
         random_walk = importRandomWalkFromFile(walk_dirname + std::to_string(walk) + ".dat");
+        // random_walk = importRandomWalkFromBinaryFile(walk_dirname + std::to_string(walk) + ".bin.dat");
       } else {
         std::cout << "- Starting Walk ";
         random_walk = setupRandomWalk(walker_start_nodes[walk], diffusion_constant);
@@ -202,7 +203,7 @@ int main(int argc, char *argv[]) {
         }
         std::string comment = "Random walk of graph " + graph_filename;
 
-        exportRandomWalkToFile(random_walk, walk_dirname + std::to_string(walk) + ".dat", comment);
+        exportRandomWalkToBinaryFile(random_walk, walk_dirname + std::to_string(walk) + ".bin.dat");
       }
 
       for (int sigma = 1; sigma < random_walk.dimension.size() - 1; sigma++) {

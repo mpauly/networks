@@ -270,6 +270,6 @@ RandomWalk importRandomWalkFromBinaryFile(std::string filename) {
     infile.read(reinterpret_cast<char *>(&value), sizeof(double));
     walk.lvl_probabilities.AddDat(key, value);
   }
-
+  infile.close();
   return walk;
 }
