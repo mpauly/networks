@@ -119,7 +119,7 @@ RandomWalk importRandomWalkFromFile(std::string filename) {
   return walk;
 }
 
-RandomWalk importRandomWalkFromBinaryFile(std::string filename) {
+RandomWalk importRandomWalkFromBinaryFile(std::string filename, bool skip_level_probs) {
   std::ifstream infile(filename, std::ios::in | std::ios::binary);
   RandomWalk walk;
 
@@ -138,17 +138,23 @@ RandomWalk importRandomWalkFromBinaryFile(std::string filename) {
   for (int i = 0; i < walk.sigma + 1; i++) {
     infile.read(reinterpret_cast<char *>(&(walk.return_probability[i])), sizeof(double));
   }
-  int length;
-  infile.read(reinterpret_cast<char *>(&length), sizeof(int));
-  int key;
-  double value;
-  for (int i = 0; i < length; i++) {
-    infile.read(reinterpret_cast<char *>(&key), sizeof(int));
-    infile.read(reinterpret_cast<char *>(&value), sizeof(double));
-    walk.lvl_probabilities.AddDat(key, value);
+  if (!skip_level_probs) {
+    int length;
+    infile.read(reinterpret_cast<char *>(&length), sizeof(int));
+    int key;
+    double value;
+    for (int i = 0; i < length; i++) {
+      infile.read(reinterpret_cast<char *>(&key), sizeof(int));
+      infile.read(reinterpret_cast<char *>(&value), sizeof(double));
+      walk.lvl_probabilities.AddDat(key, value);
+    }
   }
   infile.close();
   return walk;
+}
+
+RandomWalk importRandomWalkFromBinaryFile(std::string filename) {
+  return importRandomWalkFromBinaryFile(filename, false);
 }
 
 } // namespace walker

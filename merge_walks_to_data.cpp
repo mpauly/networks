@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   walker::RandomWalk walk;
   for (const auto &entry : fs::directory_iterator(path)) {
     std::cout << "Reading file " << entry.path() << " with length ";
-    walk = walker::importRandomWalkFromBinaryFile(entry.path());
+    walk = walker::importRandomWalkFromBinaryFile(entry.path(), true);
     // we are ignoring the first and the last data point
     for (int sig = 1; sig < walk.sigma; sig++) {
       dimfile << walk.start_node << "\t" << sig << "\t";
