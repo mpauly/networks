@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
       std::cout << std::left << std::setw(headerWidths[0]) << walk.start_node << separator << std::setw(headerWidths[1])
                 << walk.sigma << separator << std::setw(headerWidths[2]) << walk.diffusion_constant << std::endl;
       nr_of_walks++;
-      std::cout << std::endl << nr_of_walks << " walks in total" << std::endl;
     }
+    std::cout << std::endl << nr_of_walks << " walks in total" << std::endl;
   }
 }
