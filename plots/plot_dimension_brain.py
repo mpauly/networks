@@ -37,7 +37,7 @@ plt.fill_between(sigmas, means + stds, means - stds, alpha=0.2, color="tab:orang
 plt.axhline(target_dimension, c="tab:green", ls="--")
 
 plt.xlim([np.min(sigma), np.max(sigma)])
-plt.ylim(1, 4.5)
+# plt.ylim(1, 4.5)
 
 plt.xlabel("$\\sigma$")
 plt.ylabel("$d_{\\rm spec}$")
@@ -55,4 +55,6 @@ ax2.hist(dimensions_hist)
 ax2.axvline(np.mean(dimensions_hist), color="tab:orange")
 ax2.axvline(target_dimension, color="tab:green", ls="--")
 
-plt.savefig(outfile)
+fig = plt.gcf()
+fig.set_size_inches(5.52, 3.41)
+fig.savefig(outfile, bbox_inches="tight")

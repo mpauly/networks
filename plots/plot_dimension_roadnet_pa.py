@@ -59,4 +59,6 @@ ax2.hist(dimensions_450, bins=np.arange(0.5, 5.5, 0.25))
 ax2.axvline(np.mean(dimensions_450), color="tab:orange")
 ax2.axvline(2, color="tab:green", ls="--")
 
-plt.savefig(outfile)
+fig = plt.gcf()
+fig.set_size_inches(5.52, 3.41)
+fig.savefig(outfile, bbox_inches="tight")

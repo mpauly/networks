@@ -11,7 +11,7 @@ diffusion_const_values = np.unique(diffusion_const)
 # second plot
 for dc in diffusion_const_values:
     mask = dc == diffusion_const
-    plt.plot(sigma[mask], dim[mask], label="${:.2f}$".format(dc))
+    plt.plot(sigma[mask], dim[mask], label="$\\delta={:.2f}$".format(dc))
 
 plt.legend()
 plt.xlabel("$\\sigma$")

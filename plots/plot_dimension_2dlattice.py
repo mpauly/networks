@@ -38,4 +38,6 @@ ax2.set_ylabel("$d_{\\rm spec}$")
 ax2.plot(sigma[:inset_sigma], dim[:inset_sigma], c="tab:blue")
 ax2.axhline(target_dimension, c="tab:green", ls="--")
 
-plt.savefig(outfile)
+fig = plt.gcf()
+fig.set_size_inches(5.52, 3.41)
+fig.savefig(outfile, bbox_inches="tight")
