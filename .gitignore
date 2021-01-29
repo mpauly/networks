@@ -33,3 +33,7 @@
 
 *.x
 *.x.Err
+.vscode/*
+# dont add mathematica files
+*.nb
+copy_plots.sh
