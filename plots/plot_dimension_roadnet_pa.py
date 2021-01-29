@@ -33,6 +33,7 @@ print(
         sigmas[np.argmax(means)], np.max(means)
     )
 )
+ref_sigma = sigmas[np.argmax(means)]
 
 ax1.plot(sigmas, means, c="tab:orange")
 plt.fill_between(sigmas, means + stds, means - stds, alpha=0.2, color="tab:orange")
@@ -49,10 +50,10 @@ ax2 = plt.axes([0, 0, 1, 1])
 # Manually set the position and relative size of the inset axes within ax1
 ip = InsetPosition(ax1, [0.65, 0.65, 0.3, 0.3])
 ax2.set_axes_locator(ip)
-ax2.set_xlabel("$d_{\\rm spec}(\\sigma = 450)$")
+ax2.set_xlabel("$d_{\\rm spec}(\\sigma = " + str(round(ref_sigma)) + ")$")
 ax2.set_ylabel("$n$")
 
-relevant_data = data[data[:, 1] == 450]
+relevant_data = data[data[:, 1] == ref_sigma]
 dimensions_450 = relevant_data[:, 2]
 ax2.hist(dimensions_450, bins=np.arange(0.5, 5.5, 0.25))
 ax2.axvline(np.mean(dimensions_450), color="tab:orange")
