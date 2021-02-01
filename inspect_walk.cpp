@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  const std::vector<std::string> headers = {"Start Node", "Sigma", "Delta"};
+  const std::vector<std::string> headers = {"Walk ID", "Start Node", "Sigma", "Delta"};
   const std::string separator = "      ";
 
   size_t headerWidths[headers.size()];
@@ -69,8 +69,9 @@ int main(int argc, char *argv[]) {
   walker::RandomWalk walk;
   if (filter_walks) {
     walk = walker::importRandomWalkFromBinaryFile(path + "/" + std::to_string(walk_id) + ".bin.dat", true);
-    std::cout << std::left << std::setw(headerWidths[0]) << walk.start_node << separator << std::setw(headerWidths[1])
-              << walk.sigma << separator << std::setw(headerWidths[2]) << walk.diffusion_constant << std::endl;
+    std::cout << std::left << std::setw(headerWidths[0]) << walk_id << separator << std::setw(headerWidths[1])
+              << walk.start_node << separator << std::setw(headerWidths[2]) << walk.sigma << separator
+              << std::setw(headerWidths[3]) << walk.diffusion_constant << std::endl;
     std::cout << std::endl;
   } else {
     int nr_of_walks = 0;
