@@ -70,7 +70,7 @@ for batch_id in range(total_walkers // batch_size):
         )
     )
     try:
-        # subprocess.call("qsub " + base + ".qsub", shell=True)
-        subprocess.call("cat " + base + ".qsub", shell=True)
+        subprocess.call("qsub " + base + ".qsub", shell=True)
+        # subprocess.call("cat " + base + ".qsub", shell=True)
     finally:
         os.remove(base + ".qsub")
