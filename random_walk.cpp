@@ -171,9 +171,9 @@ int main(int argc, char *argv[]) {
   for (int walk = walker_min_id; walk < walker_min_id + nr_of_walkers; walk++) {
     walker::RandomWalk random_walk;
 
-    std::function<void(int)> progress_monitor = [walk](int sigma) {
-      if (sigma % 50 == 0)
-        std::cout << "\t - w" << walk << " sigma = " << sigma << std::endl;
+    std::function<void(const walker::RandomWalk &)> progress_monitor = [walk](const walker::RandomWalk &walk_in) {
+      if (walk_in.sigma % 50 == 0)
+        std::cout << "\t - w" << walk << " sigma = " << walk_in.sigma << std::endl;
     };
 
 #pragma omp critical

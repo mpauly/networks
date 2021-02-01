@@ -33,7 +33,7 @@ RandomWalk setupRandomWalk(const int &start_node, const double diffusion_constan
 // legacy wrapper
 template <class PGraph>
 std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &start_node, const int &max_depth,
-                                            std::function<void(int)> progress_monitor,
+                                            std::function<void(const RandomWalk)> progress_monitor,
                                             const double diffusion_constant) {
   // setup the walk
   RandomWalk walk = setupRandomWalk(start_node, diffusion_constant);
@@ -45,7 +45,7 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
 // Inspired by SNAP's DoBfs
 template <class PGraph>
 void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps,
-                        std::function<void(int)> progress_monitor) {
+                        std::function<void(const RandomWalk &)> progress_monitor) {
 
   walk.return_probability.resize(walk.sigma + nr_of_steps + 1);
   walk.dimension.resize(walk.sigma + nr_of_steps + 1);
@@ -62,12 +62,13 @@ void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps,
     queue.Push(it.GetKey());
   }
 
-  for (int sigma = walk.sigma + 1; sigma < walk.sigma + nr_of_steps + 1; sigma++) {
+  int target_size = walk.sigma + nr_of_steps + 1;
+  for (walk.sigma = walk.sigma + 1; walk.sigma < target_size; walk.sigma++) {
     walk.lvl_probabilities.Clr();
 
     if (WALKER_DEBUG)
-      printf("\n == Sigma %d ==\n", sigma);
-    progress_monitor(sigma);
+      printf("\n == Sigma %d ==\n", walk.sigma);
+
     // deal with all the nodes that are in the queue at the moment
     // this relies on the loop initialization begin run exactly once, as the queue grows while the loop is executed
     for (int node = queue.Len(); node > 0; node--) {
@@ -107,30 +108,32 @@ void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps,
       }
 
       if (walk.lvl_probabilities.IsKey(walk.start_node)) {
-        walk.return_probability[sigma] = walk.lvl_probabilities.GetDat(walk.start_node);
+        walk.return_probability[walk.sigma] = walk.lvl_probabilities.GetDat(walk.start_node);
       } else {
-        walk.return_probability[sigma] = 0.0;
+        walk.return_probability[walk.sigma] = 0.0;
       }
     }
     last_lvl_probabilities = walk.lvl_probabilities;
 
     // finally extract the dimension
-    if (sigma > 1) {
+    if (walk.sigma > 1) {
       // This is the probability derivative and dimension at position sigma -1
-      probability_derivative = 0.5 * (-walk.return_probability[sigma - 2] + walk.return_probability[sigma]);
+      probability_derivative = 0.5 * (-walk.return_probability[walk.sigma - 2] + walk.return_probability[walk.sigma]);
       // this is the spectral dimension at sigma - 1
-      walk.dimension[sigma - 1] =
-          -2.0 * ((double)sigma - 1) / walk.return_probability[sigma - 1] * probability_derivative;
+      walk.dimension[walk.sigma - 1] =
+          -2.0 * ((double)walk.sigma - 1) / walk.return_probability[walk.sigma - 1] * probability_derivative;
       if (WALKER_DEBUG)
-        printf("\n d=%f", walk.dimension[sigma - 1]);
+        printf("\n d=%f", walk.dimension[walk.sigma - 1]);
     }
+
+    progress_monitor(walk);
   }
-  walk.sigma += nr_of_steps;
+  walk.sigma -= 1; // take minus one, because the last step was never taken
 }
 
 // Convenience function without progress monitor
 template <class PGraph> void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps) {
-  std::function<void(int)> progress_monitor = [](int sigma) {};
+  std::function<void(const RandomWalk)> progress_monitor = [](const RandomWalk &walk) {};
   progressRandomWalk(Graph, walk, nr_of_steps, progress_monitor);
 }
 } // namespace walker

@@ -19,10 +19,11 @@ struct Parameter_pair {
 
 int main(int argc, char *argv[]) {
 
-  const std::function<void(int)> progress_monitor = [](int sigma) {
-    // if (sigma % 50 == 0)
+  const std::function<void(walker::RandomWalk)> progress_monitor = [](const walker::RandomWalk &walk) {
+    // if (walk.sigma % 50 == 0)
     //  std::cout << "." << std::flush;
   };
+
   // =========== without random connections ===========
   {
     typedef PUNGraph PGraph; // undirected graph
