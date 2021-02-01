@@ -77,8 +77,11 @@ int main(int argc, char *argv[]) {
     int nr_of_walks = 0;
     for (const auto &entry : fs::directory_iterator(path)) {
       walk = walker::importRandomWalkFromBinaryFile(entry.path(), true);
-      std::cout << std::left << std::setw(headerWidths[0]) << walk.start_node << separator << std::setw(headerWidths[1])
-                << walk.sigma << separator << std::setw(headerWidths[2]) << walk.diffusion_constant << std::endl;
+      std::string filename = fs::path(entry).filename().string();
+      // the 8 just cuts away the .bin.dat
+      std::cout << std::left << std::setw(headerWidths[0]) << filename.substr(0, filename.size() - 8) << separator
+                << std::setw(headerWidths[1]) << walk.start_node << separator << std::setw(headerWidths[2])
+                << walk.sigma << separator << std::setw(headerWidths[3]) << walk.diffusion_constant << std::endl;
       nr_of_walks++;
     }
     std::cout << std::endl << nr_of_walks << " walks in total" << std::endl;
