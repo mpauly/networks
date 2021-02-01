@@ -27,7 +27,7 @@ log_file={base_dir}/logs/{name}_{batch_id}.log
 echo "------------------------------------------------------------------------" >> $log_file
 echo "Job started on" `date`  >> $log_file
 echo "------------------------------------------------------------------------"  >> $log_file
-nice -19 ./random_walk.x {continue_flag} -W {start_walk} -w {batch_size} -l {walk_length} graphs/{name}.dat  >> $log_file
+nice -19 ./queue_walk.x -i {interval} -W {start_walk} -w {batch_size} -l {walk_length} graphs/{name}.dat  >> $log_file
 echo "------------------------------------------------------------------------"  >> $log_file
 echo "Job ended on" `date`  >> $log_file
 echo "------------------------------------------------------------------------"  >> $log_file
@@ -38,7 +38,7 @@ parser = argparse.ArgumentParser(
     description="A helper script that allows to qsub a number of jobs"
 )
 parser.add_argument(
-    "-c", "--continueWalk", help="Continue existing walks", action="store_true"
+    "-i", "--interval", help="Interval for intermediate saves", type=int
 )
 parser.add_argument("graph", help="the graph to walk on in format roadnet_pa")
 parser.add_argument("total_walkers", help="the total number of walkers", type=int)
@@ -48,7 +48,6 @@ args = parser.parse_args()
 
 batch_size = args.batch_size
 total_walkers = args.total_walkers
-continue_flag = "-c" if args.continueWalk else "-e"
 
 name = args.graph
 
@@ -65,13 +64,13 @@ for batch_id in range(total_walkers // batch_size):
             base_dir=BASEDIR,
             batch_id=batch_id,
             walk_length=args.walk_length,
+            interval=args.interval,
             start_walk=start_walk,
             batch_size=batch_size,
-            continue_flag=continue_flag,
         )
     )
     try:
-        subprocess.call("qsub " + base + ".qsub", shell=True)
-        # subprocess.call("cat " + base + ".qsub", shell=True)
+        # subprocess.call("qsub " + base + ".qsub", shell=True)
+        subprocess.call("cat " + base + ".qsub", shell=True)
     finally:
         os.remove(base + ".qsub")
