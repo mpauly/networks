@@ -118,8 +118,11 @@ int main(int argc, char *argv[]) {
       if (walk_in.sigma % 50 == 0)
         std::cout << "\t - w" << walk << " sigma = " << walk_in.sigma << std::endl;
       if (walk_in.sigma % interval == 0) {
-        std::cout << "- Exporting walk " << walk << std::endl;
-        walker::exportRandomWalkToBinaryFile(walk_in, walk_filename);
+#pragma omp critical
+        {
+          std::cout << "- Exporting walk " << walk << std::endl;
+          walker::exportRandomWalkToBinaryFile(walk_in, walk_filename);
+        }
       }
     };
 
@@ -139,16 +142,18 @@ int main(int argc, char *argv[]) {
 
     progressRandomWalk(G, random_walk, sigma_max, progress_monitor);
 
+    if (random_walk.sigma % interval != 0) {
 #pragma omp critical
-    {
+      {
 
-      std::cout << "- Exporting final state for walk " << walk << std::endl;
-      if (!fs::is_directory(walk_dirname) || !fs::exists(walk_dirname)) {
-        fs::create_directory(walk_dirname);
+        std::cout << "- Exporting final state for walk " << walk << std::endl;
+        if (!fs::is_directory(walk_dirname) || !fs::exists(walk_dirname)) {
+          fs::create_directory(walk_dirname);
+        }
+
+        walker::exportRandomWalkToBinaryFile(random_walk, walk_filename);
+        std::cout << "- Walk " << walk << " finished" << std::endl;
       }
-
-      walker::exportRandomWalkToBinaryFile(random_walk, walk_filename);
-      std::cout << "- Walk " << walk << " finished" << std::endl;
     }
   }
   std::cout << "- Finished walking..." << std::endl;
