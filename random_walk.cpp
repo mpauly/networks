@@ -128,7 +128,15 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  std::cout << "  Input graph has " << G->GetNodes() << " nodes and " << G->GetEdges() << " edges" << std::endl;
+  std::cout << "  Input graph has " << G->GetNodes() << " nodes and " << G->GetEdges() << " edges";
+  if (!TSnap::IsWeaklyConn<PUNGraph>(G)) {
+    std::cout << std::endl;
+    std::cout << "============================================" << std::endl;
+    std::cout << "== WARNING: Graph is not weakly connected ==" << std::endl;
+    std::cout << "============================================" << std::endl;
+  } else {
+    std::cout << " and is connected" << std::endl;
+  }
 
   // ==== do the walk ====
   std::cout << "- Writing results to file " << dimension_file << std::endl;
