@@ -1,6 +1,10 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
+
+matplotlib.rcParams["mathtext.fontset"] = "stix"
+matplotlib.rcParams["font.family"] = "STIXGeneral"
 
 dimfile = "data/dim_roadnet_pa.dat"
 outfile = "plots/out/dim_roadnet_pa.pdf"
@@ -15,7 +19,7 @@ fig, ax1 = plt.subplots()
 
 for node in startnodes:
     mask = (node == startnode) & (~np.isnan(dim))
-    ax1.plot(sigma[mask], dim[mask], alpha=0.2, c="tab:blue")
+    ax1.plot(sigma[mask], dim[mask], alpha=0.1, c="tab:blue")
 
 sigmas = np.unique(sigma)
 means = np.zeros(sigmas.shape)
@@ -41,7 +45,8 @@ plt.fill_between(sigmas, means + stds, means - stds, alpha=0.2, color="tab:orang
 plt.axhline(2, c="tab:green", ls="--")
 
 plt.xlim([np.min(sigma), np.max(sigma)])
-plt.ylim(1, 3.5)
+plt.ylim(1, 4.5)
+# plt.semilogx()
 
 plt.xlabel("$\\sigma$")
 plt.ylabel("$d_{\\rm spec}$")
