@@ -35,8 +35,11 @@ int main(int argc, char *argv[]) {
   std::string graph_name;
 
   int option;
-  while ((option = getopt(argc, argv, "aecs:l:W:w:d:o:")) != -1) { // get option from the getopt() method
+  while ((option = getopt(argc, argv, "f:s:l:d:?")) != -1) { // get option from the getopt() method
     switch (option) {
+    case 'f':
+      frames = atoi(optarg);
+      break;
     case 's':
       start_node = atoi(optarg);
       break;
@@ -85,6 +88,7 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << " == Walking on graph " << graph_name << " == " << std::endl;
+  std::cout << "  Graph has " << G->GetNodes() << " nodes and " << G->GetEdges() << " edges" << std::endl;
 
   for (int frame = 0; frame < frames; frame++) {
     // make a snapshot
@@ -93,6 +97,8 @@ int main(int argc, char *argv[]) {
     TIntStrH NIdColorH;
 
     walk.lvl_probabilities.GetKeyV(visisted_nodes);
+
+    std::cout << "  " << visisted_nodes.Len() << " Nodes on this level" << std::endl;
 
     // here we are just rescaling the values to the interval [0,1] in order to have more vivid colors
     double min_val = 2.0;
