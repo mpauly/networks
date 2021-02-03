@@ -38,7 +38,11 @@ parser = argparse.ArgumentParser(
     description="A helper script that allows to qsub a number of jobs"
 )
 parser.add_argument(
-    "-i", "--interval", help="Interval for intermediate saves", type=int
+    "-i",
+    "--interval",
+    help="Interval for intermediate saves - defaults to 500",
+    type=int,
+    default=500,
 )
 parser.add_argument("graph", help="the graph to walk on in format roadnet_pa")
 parser.add_argument("total_walkers", help="the total number of walkers", type=int)

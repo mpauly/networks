@@ -13,9 +13,8 @@ namespace fs = std::filesystem;
 
 void print_usage() {
   std::cout
-      << "usage: ./queue_walk.x [-a] [-e] [-c] [-w walker_nr] [-W walker_min_id] [-s start_node] [-l length] [-d "
-         "diffusion_constant] [-o "
-         "outfile] graph_filename"
+      << "usage: ./queue_walk.x [-w walker_nr] [-W walker_min_id] [-l length] [-d diffusion_constant] [-i interval] "
+         "graph_filename"
       << std::endl
       << "This walker is similar to random_walk.x but optimized for long running queue jobs" << std::endl
       << "  -w walker_nr: Number of walkers that will be run, defaults to 1" << std::endl
@@ -26,6 +25,7 @@ void print_usage() {
       << "  -d diffusion_constant delta: Diffusion constant to regularize osciallations in the spectral dimension, "
          "default: 0.5, (1-delta) is the probability to stay at the current node"
       << std::endl
+      << "  -i interval: at multiples of interval the walker will write a snapshot to disk" << std::endl
       << "  graph_filename: The graph to run the random walker on" << std::endl;
 }
 
@@ -152,9 +152,9 @@ int main(int argc, char *argv[]) {
         }
 
         walker::exportRandomWalkToBinaryFile(random_walk, walk_filename);
-        std::cout << "- Walk " << walk << " finished" << std::endl;
       }
     }
+    std::cout << "- Walk " << walk << " finished" << std::endl;
   }
   std::cout << "- Finished walking..." << std::endl;
   return 0;
