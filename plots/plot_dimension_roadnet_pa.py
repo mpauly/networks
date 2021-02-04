@@ -1,6 +1,8 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from matplotlib.collections import LineCollection
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
 matplotlib.rcParams["mathtext.fontset"] = "stix"
@@ -8,46 +10,42 @@ matplotlib.rcParams["font.family"] = "STIXGeneral"
 
 dimfile = "data/dim_roadnet_pa.dat"
 outfile = "plots/out/dim_roadnet_pa.pdf"
+outfile_log = "plots/out/dim_roadnet_pa_log.pdf"
+convergence_file = "plots/out/dim_roadnet_pa_convergence.pdf"
 
 print("Reading file {} and writing plot to {}".format(dimfile, outfile))
 # 1D chain plot
-data = np.loadtxt(dimfile)
-startnode, sigma, dim = data.T
-startnodes = np.unique(startnode)
+data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
+startnodes = pd.unique(data["start_node"])
+
+data_plot = np.array(list(data.groupby("start_node").apply(pd.DataFrame.to_numpy)))
+data_plot = data_plot[:, :, 1:]
 
 fig, ax1 = plt.subplots()
+ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
+ax1.set_ylim(0, 5)
+line_segments = LineCollection(data_plot, alpha=0.2)
+ax1.add_collection(line_segments)
 
-for node in startnodes:
-    mask = (node == startnode) & (~np.isnan(dim))
-    ax1.plot(sigma[mask], dim[mask], alpha=0.1, c="tab:blue")
-
-sigmas = np.unique(sigma)
-means = np.zeros(sigmas.shape)
-stds = np.zeros(sigmas.shape)
-
-# poor mans implementation of a pivot table
-for ind, s in enumerate(sigmas):
-    relevant_data = data[data[:, 1] == s]
-    dimensions = relevant_data[:, 2]
-    means[ind] = np.mean(dimensions)
-    stds[ind] = np.std(dimensions)
-
+mean_per_sigma = data.groupby("sigma").mean()
+std_dev_per_sigma = data.groupby("sigma").agg(np.std, ddof=1)
 print(
     "Maximum is at {} and has dimension {}".format(
-        sigmas[np.argmax(means)], np.max(means)
+        mean_per_sigma["dim"].idxmax(), mean_per_sigma["dim"].max()
     )
 )
-ref_sigma = sigmas[np.argmax(means)]
+ref_sigma = mean_per_sigma["dim"].idxmax()
 
-ax1.plot(sigmas, means, c="tab:orange")
-plt.fill_between(sigmas, means + stds, means - stds, alpha=0.2, color="tab:orange")
+mean_per_sigma["dim"].plot(ax=ax1, color="tab:orange")
+plt.fill_between(
+    mean_per_sigma.index,
+    mean_per_sigma["dim"] + std_dev_per_sigma["dim"],
+    mean_per_sigma["dim"] - std_dev_per_sigma["dim"],
+    alpha=0.2,
+    color="tab:orange",
+)
 
 plt.axhline(2, c="tab:green", ls="--")
-
-plt.xlim([np.min(sigma), np.max(sigma)])
-plt.ylim(1, 4.5)
-# plt.semilogx()
-
 plt.xlabel("$\\sigma$")
 plt.ylabel("$d_{\\rm spec}$")
 
@@ -58,12 +56,63 @@ ax2.set_axes_locator(ip)
 ax2.set_xlabel("$d_{\\rm spec}(\\sigma = " + str(round(ref_sigma)) + ")$")
 ax2.set_ylabel("$n$")
 
-relevant_data = data[data[:, 1] == ref_sigma]
-dimensions_450 = relevant_data[:, 2]
-ax2.hist(dimensions_450, bins=np.arange(0.5, 5.5, 0.25))
-ax2.axvline(np.mean(dimensions_450), color="tab:orange")
+relevant_data = data[data["sigma"] == ref_sigma]
+relevant_data["dim"].plot(
+    kind="hist", ax=ax2, bins=np.arange(0.5, 5.5, 0.25), grid=False
+)
+ax2.axvline(relevant_data["dim"].mean(), color="tab:orange")
 ax2.axvline(2, color="tab:green", ls="--")
 
 fig = plt.gcf()
 fig.set_size_inches(5.52, 3.41)
 fig.savefig(outfile, bbox_inches="tight")
+
+ax1.semilogx()
+fig.savefig(outfile_log, bbox_inches="tight")
+
+plt.clf()
+
+nr_of_bins = 4
+
+per_bucket = int(data.shape[0] / nr_of_bins)
+
+ax1 = plt.gca()
+
+for quartile in range(nr_of_bins):
+    quartile_data = data[quartile * per_bucket : (quartile + 1) * per_bucket]
+    mean_per_sigma = quartile_data.groupby("sigma").mean()
+    std_dev_per_sigma = quartile_data.groupby("sigma").agg(np.std)
+
+    mean_per_sigma["dim"].plot(ax=ax1, ls="--")
+    plt.fill_between(
+        mean_per_sigma.index,
+        mean_per_sigma["dim"] + std_dev_per_sigma["dim"],
+        mean_per_sigma["dim"] - std_dev_per_sigma["dim"],
+        alpha=0.1,
+        color=ax1.lines[-1].get_color(),
+    )
+
+
+mean_per_sigma = data.groupby("sigma").mean()
+std_dev_per_sigma = data.groupby("sigma").agg(np.std)
+
+mean_per_sigma["dim"].plot(ax=ax1)
+plt.fill_between(
+    mean_per_sigma.index,
+    mean_per_sigma["dim"] + std_dev_per_sigma["dim"],
+    mean_per_sigma["dim"] - std_dev_per_sigma["dim"],
+    alpha=0.1,
+    color=ax1.lines[-1].get_color(),
+)
+
+plt.axhline(2, c="tab:gray", ls="--")
+
+ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
+ax1.set_ylim(1, 3)
+
+plt.xlabel("$\\sigma$")
+plt.ylabel("$d_{\\rm spec}$")
+
+fig = plt.gcf()
+fig.set_size_inches(5.52, 3.41)
+fig.savefig(convergence_file, bbox_inches="tight")
