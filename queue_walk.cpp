@@ -22,6 +22,7 @@ void print_usage() {
          "existing ensemble"
       << std::endl
       << "  -l maximum_length: Length of the random walk, defaults to 10000" << std::endl
+      << "  -L limit: target length for all walks - when this length is reached a walker is stopped" << std::endl
       << "  -d diffusion_constant delta: Diffusion constant to regularize osciallations in the spectral dimension, "
          "default: 0.5, (1-delta) is the probability to stay at the current node"
       << std::endl
@@ -34,14 +35,18 @@ int main(int argc, char *argv[]) {
   int nr_of_walkers = 1;
   int walker_min_id = 0;
   int interval = 500;
+  int limit_length = -1;
   double diffusion_constant = 0.5;
 
   // parse arguments
   int option;
-  while ((option = getopt(argc, argv, "l:W:w:d:i:")) != -1) { // get option from the getopt() method
+  while ((option = getopt(argc, argv, "l:L:W:w:d:i:")) != -1) { // get option from the getopt() method
     switch (option) {
     case 'l':
       sigma_max = atoi(optarg);
+      break;
+    case 'L':
+      limit_length = atoi(optarg);
       break;
     case 'W':
       walker_min_id = atoi(optarg);
@@ -126,6 +131,8 @@ int main(int argc, char *argv[]) {
       }
     };
 
+    int steps = sigma_max;
+
 #pragma omp critical
     {
       if (fs::exists(walk_filename)) {
@@ -136,11 +143,15 @@ int main(int argc, char *argv[]) {
         random_walk = walker::setupRandomWalk(walker_start_nodes[walk], diffusion_constant);
       }
 
-      std::cout << walk << " at node " << random_walk.start_node << " and will walk for " << sigma_max
+      if (limit_length > 0 && random_walk.sigma + steps > limit_length) {
+        steps = limit_length - random_walk.sigma;
+      }
+
+      std::cout << walk << " at node " << random_walk.start_node << " and will walk for " << steps
                 << " steps with diffusion constant " << diffusion_constant << std::endl;
     }
 
-    progressRandomWalk(G, random_walk, sigma_max, progress_monitor);
+    progressRandomWalk(G, random_walk, steps, progress_monitor);
 
     if (random_walk.sigma % interval != 0) {
 #pragma omp critical
