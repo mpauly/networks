@@ -25,6 +25,7 @@ graph_data:
 	 wget -O graphs/data/sub-0025864_ses-1_dwi_DS72784.gpickle https://mrneurodata.s3.amazonaws.com/data/BNU1/ndmg_0-0-48/graphs/DS72784/sub-0025864_ses-1_dwi_DS72784.gpickle
 	 # the following does not work - one needs to authenticate in order to download that dataset
 	 # wget -O - https://storage.cloud.google.com/hemibrain/v1.2/exported-traced-adjacencies-v1.2.tar.gz | tar -xz -C graphs/data/
+	 wget -O graphs/data/metabolism.kgml http://rest.kegg.jp/get/rn01100/kgml
 
 diffusion_test:
 	for i in {1..9}; do ./random_walk.x -l 200 -d 0.$$i -s 5050 -o data/2dtest/d0$$i.dat graphs/2d_lattice_100.dat; done

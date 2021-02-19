@@ -134,6 +134,13 @@ int main(int argc, char *argv[]) {
     std::cout << "============================================" << std::endl;
     std::cout << "== WARNING: Graph is not weakly connected ==" << std::endl;
     std::cout << "============================================" << std::endl;
+    TIntPrV counts;
+    TSnap::GetWccSzCnt(G, counts);
+    for (int i = 0; i < counts.Len(); i++) {
+      std::cout << " - " << counts[i].GetVal2() << " component(s) with " << counts[i].GetVal1() << " nodes"
+                << std::endl;
+    }
+    return 1;
   } else {
     std::cout << " and is connected" << std::endl;
   }

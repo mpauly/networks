@@ -30,6 +30,13 @@ int main(int argc, char *argv[]) {
     PUNGraph G = TSnap::LoadEdgeList<PUNGraph>("graphs/data/as-skitter.txt", 0, 1);
     save_graph_to_file(G, graph_dir + "as-skitter.dat");
   }
+  // =============== Metabolism network ===============================
+  {
+    std::cout << "== Writing Metabolism network graph ==" << std::endl;
+    PUNGraph G = TSnap::LoadEdgeList<PUNGraph>("graphs/data/metabolism.csv", 0, 1, ',');
+    G = TSnap::GetMxWcc(G);
+    save_graph_to_file(G, graph_dir + "metabolism.dat");
+  }
   // =============== Drosophila brain ===============================
   {
     std::cout << "== Writing Drosophila Brain graph - small version ==" << std::endl;
