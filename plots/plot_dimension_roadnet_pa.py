@@ -12,6 +12,7 @@ dimfile = "data/dim_roadnet_pa.dat"
 outfile = "plots/out/dim_roadnet_pa.pdf"
 outfile_log = "plots/out/dim_roadnet_pa_log.pdf"
 convergence_file = "plots/out/dim_roadnet_pa_convergence.pdf"
+convergence_file_2 = "plots/out/dim_roadnet_pa_convergence_2.pdf"
 
 print("Reading file {} and writing plot to {}".format(dimfile, outfile))
 # 1D chain plot
@@ -72,6 +73,8 @@ fig.savefig(outfile_log, bbox_inches="tight")
 
 plt.clf()
 
+# ------------- convergence plot ----------------------
+
 nr_of_bins = 4
 
 per_bucket = int(data.shape[0] / nr_of_bins)
@@ -116,3 +119,37 @@ plt.ylabel("$d_{\\rm spec}$")
 fig = plt.gcf()
 fig.set_size_inches(5.52, 3.41)
 fig.savefig(convergence_file, bbox_inches="tight")
+
+plt.clf()
+
+# ------------- convergence plot 2 ----------------------
+
+sigmas_per_startnode = data[data["start_node"] == 950557].shape[0]
+
+data["diff"] = data.dim - data.groupby("sigma").transform("mean").dim
+data["reldiff"] = data["diff"] / data.groupby("sigma").transform("mean").dim
+data["reldiff"] = data["reldiff"].apply(np.abs)
+
+rolling_mean_data = data.groupby("sigma")["dim"].expanding().mean().reset_index()
+rolling_mean_data["startid"] = (
+    rolling_mean_data["level_1"] / sigmas_per_startnode
+).apply(np.floor)
+del rolling_mean_data["level_1"]
+data_pivot = rolling_mean_data.pivot("sigma", "startid")
+
+x = data_pivot.columns.levels[1].values
+y = data_pivot.index.values
+z = data_pivot.values
+xi, yi = np.meshgrid(x, y)
+cs = plt.contourf(
+    yi, xi, z, alpha=0.7, cmap=plt.cm.jet, levels=np.linspace(1.5, 2.5, 11)
+)
+
+plt.xlabel("$\\sigma$")
+plt.ylabel("$N$")
+
+fig = plt.gcf()
+cbar = fig.colorbar(cs)
+cbar.ax.set_ylabel("$\\bar{d}_{\\rm spec}(N)$", rotation=90)
+fig.set_size_inches(5.52, 3.41)
+fig.savefig(convergence_file_2, bbox_inches="tight")
