@@ -1,5 +1,6 @@
 #include "Snap.h"
 #include "walker/base.h"
+#include "walker/consts.h"
 #include "walker/io.h"
 #include <algorithm>
 #include <chrono>
@@ -11,10 +12,20 @@
 
 namespace fs = std::filesystem;
 
+struct WalkConfig {
+  int sigma_max = 10000;
+  int nr_of_walkers = 1;
+  int walker_min_id = 0;
+  int interval = 500;
+  int limit_length = -1;
+  double diffusion_constant = 0.5;
+  std::string graph;
+};
+
 void print_usage() {
   std::cout
       << "usage: ./queue_walk.x [-w walker_nr] [-W walker_min_id] [-l length] [-d diffusion_constant] [-i interval] "
-         "graph_filename"
+         "graph"
       << std::endl
       << "This walker is similar to random_walk.x but optimized for long running queue jobs" << std::endl
       << "  -w walker_nr: Number of walkers that will be run, defaults to 1" << std::endl
@@ -27,71 +38,16 @@ void print_usage() {
          "default: 0.5, (1-delta) is the probability to stay at the current node"
       << std::endl
       << "  -i interval: at multiples of interval the walker will write a snapshot to disk" << std::endl
-      << "  graph_filename: The graph to run the random walker on" << std::endl;
+      << "  graph: The graph to run the random walker on" << std::endl;
 }
 
-int main(int argc, char *argv[]) {
-  int sigma_max = 10000;
-  int nr_of_walkers = 1;
-  int walker_min_id = 0;
-  int interval = 500;
-  int limit_length = -1;
-  double diffusion_constant = 0.5;
-
-  // parse arguments
-  int option;
-  while ((option = getopt(argc, argv, "l:L:W:w:d:i:")) != -1) { // get option from the getopt() method
-    switch (option) {
-    case 'l':
-      sigma_max = atoi(optarg);
-      break;
-    case 'L':
-      limit_length = atoi(optarg);
-      break;
-    case 'W':
-      walker_min_id = atoi(optarg);
-      break;
-    case 'w':
-      nr_of_walkers = atoi(optarg);
-      break;
-    case 'd':
-      diffusion_constant = atof(optarg);
-      break;
-    case 'i':
-      interval = atoi(optarg);
-      break;
-    case '?':
-      std::cout << "Unknown option: " << optopt << std::endl;
-      print_usage();
-      return 1;
-    }
-  }
-
-  int nr_of_files = 0;
-  std::string graph_filename;
-  for (; optind < argc; optind++) {
-    graph_filename = argv[optind];
-    nr_of_files++;
-  }
-
-  if (nr_of_files != 1) {
-    std::cout << "Please specify exactly one graph" << std::endl;
-    print_usage();
-    return 1;
-  }
-
-  std::string walk_dirname = graph_filename;
-  walk_dirname = walk_dirname.replace(walk_dirname.find("graphs/"), sizeof("graphs/") - 1, "walks/");
-  walk_dirname = walk_dirname.replace(walk_dirname.find(".dat"), sizeof(".dat") - 1, "/");
-
-  // =====  load the graph  ========
-  typedef PUNGraph PGraph; // undirected graph
-  std::cout << "- Loading graph file " << graph_filename << std::endl;
-
-  PUNGraph G;
+template <class Graph> int process_network_or_graph(WalkConfig config) {
+  std::string walk_dirname = walker::WALK_DIR + config.graph + '/';
+  std::string graph_filename = walker::GRAPH_DIR + config.graph + ".dat";
+  TPt<Graph> G;
   try {
     TFIn FIn(graph_filename.c_str());
-    G = TUNGraph::Load(FIn);
+    G = Graph::Load(FIn);
   } catch (...) {
     std::cerr << "Error reading file " << graph_filename << std::endl;
     return 1;
@@ -105,8 +61,8 @@ int main(int argc, char *argv[]) {
   // deterministic, i.e. we are first reproducing the start positions of existing walks and then generating new starting
   // positions
   std::vector<int> walker_start_nodes;
-  walker_start_nodes.reserve(walker_min_id + nr_of_walkers);
-  while (walker_start_nodes.size() < walker_min_id + nr_of_walkers) {
+  walker_start_nodes.reserve(config.walker_min_id + config.nr_of_walkers);
+  while (walker_start_nodes.size() < config.walker_min_id + config.nr_of_walkers) {
     int candidate = G->GetRndNId();
     // is that start node already in our pool of start nodes?
     if (std::find(walker_start_nodes.begin(), walker_start_nodes.end(), candidate) == walker_start_nodes.end())
@@ -114,15 +70,15 @@ int main(int argc, char *argv[]) {
   }
 
 #pragma omp parallel for
-  for (int walk = walker_min_id; walk < walker_min_id + nr_of_walkers; walk++) {
+  for (int walk = config.walker_min_id; walk < config.walker_min_id + config.nr_of_walkers; walk++) {
     walker::RandomWalk random_walk;
     std::string walk_filename = walk_dirname + std::to_string(walk) + ".bin.dat";
 
-    std::function<void(walker::RandomWalk)> progress_monitor = [walk, interval,
+    std::function<void(walker::RandomWalk)> progress_monitor = [walk, config,
                                                                 walk_filename](walker::RandomWalk walk_in) {
       if (walk_in.sigma % 50 == 0)
         std::cout << "\t - w" << walk << " sigma = " << walk_in.sigma << std::endl;
-      if (walk_in.sigma % interval == 0) {
+      if (walk_in.sigma % config.interval == 0) {
 #pragma omp critical
         {
           std::cout << "- Exporting walk " << walk << std::endl;
@@ -131,7 +87,7 @@ int main(int argc, char *argv[]) {
       }
     };
 
-    int steps = sigma_max;
+    int steps = config.sigma_max;
 
 #pragma omp critical
     {
@@ -140,20 +96,20 @@ int main(int argc, char *argv[]) {
         random_walk = walker::importRandomWalkFromBinaryFile(walk_filename);
       } else {
         std::cout << "- Starting Walk ";
-        random_walk = walker::setupRandomWalk(walker_start_nodes[walk], diffusion_constant);
+        random_walk = walker::setupRandomWalk(walker_start_nodes[walk], config.diffusion_constant);
       }
 
-      if (limit_length > 0 && random_walk.sigma + steps > limit_length) {
-        steps = limit_length - random_walk.sigma;
+      if (config.limit_length > 0 && random_walk.sigma + steps > config.limit_length) {
+        steps = config.limit_length - random_walk.sigma;
       }
 
       std::cout << walk << " at node " << random_walk.start_node << " and will walk for " << steps
-                << " steps with diffusion constant " << diffusion_constant << std::endl;
+                << " steps with diffusion constant " << config.diffusion_constant << std::endl;
     }
 
     progressRandomWalk(G, random_walk, steps, progress_monitor);
 
-    if (random_walk.sigma % interval != 0) {
+    if (random_walk.sigma % config.interval != 0) {
 #pragma omp critical
       {
 
@@ -169,4 +125,64 @@ int main(int argc, char *argv[]) {
   }
   std::cout << "- Finished walking..." << std::endl;
   return 0;
+}
+
+int main(int argc, char *argv[]) {
+  WalkConfig config;
+  // parse arguments
+  int option;
+  while ((option = getopt(argc, argv, "l:L:W:w:d:i:")) != -1) { // get option from the getopt() method
+    switch (option) {
+    case 'l':
+      config.sigma_max = atoi(optarg);
+      break;
+    case 'L':
+      config.limit_length = atoi(optarg);
+      break;
+    case 'W':
+      config.walker_min_id = atoi(optarg);
+      break;
+    case 'w':
+      config.nr_of_walkers = atoi(optarg);
+      break;
+    case 'd':
+      config.diffusion_constant = atof(optarg);
+      break;
+    case 'i':
+      config.interval = atoi(optarg);
+      break;
+    case '?':
+      std::cout << "Unknown option: " << optopt << std::endl;
+      print_usage();
+      return 1;
+    }
+  }
+
+  int nr_of_files = 0;
+  for (; optind < argc; optind++) {
+    config.graph = argv[optind];
+    nr_of_files++;
+  }
+
+  if (nr_of_files != 1) {
+    std::cout << "Please specify exactly one graph" << std::endl;
+    print_usage();
+    return 1;
+  }
+
+  std::string graph_filename = walker::GRAPH_DIR + config.graph + ".dat";
+  if (fs::exists(graph_filename)) {
+    std::cout << "- Loading graph file " << graph_filename << std::endl;
+    return process_network_or_graph<TUNGraph>(config);
+  }
+
+  graph_filename = walker::NETWORK_DIR + config.graph + ".dat";
+  if (fs::exists(graph_filename)) {
+    std::cout << "- Loading network file " << graph_filename << std::endl;
+    return process_network_or_graph<TIntNEDNet>(config);
+  }
+
+  std::cout << "- Neither graph or network found - please check that the graph " << config.graph << " exists!"
+            << std::endl;
+  return 1;
 }
