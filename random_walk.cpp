@@ -232,14 +232,20 @@ int main(int argc, char *argv[]) {
   }
 
   config.walk_dir = walker::WALK_DIR + config.graph;
-
   config.graph_file = walker::GRAPH_DIR + config.graph + ".dat";
-  std::cout << "- Loading graph file " << config.graph_file << std::endl;
 
-  bool is_network = false;
-  if (is_network) {
-    return process_network_or_graph<TIntNEDNet>(config);
-  } else {
+  if (fs::exists(config.graph_file)) {
+    std::cout << "- Loading graph file " << config.graph_file << std::endl;
     return process_network_or_graph<TUNGraph>(config);
   }
+
+  config.graph_file = walker::NETWORK_DIR + config.graph + ".dat";
+  if (fs::exists(config.graph_file)) {
+    std::cout << "- Loading network file " << config.graph_file << std::endl;
+    return process_network_or_graph<TIntNEDNet>(config);
+  }
+
+  std::cout << "- Neither graph or network found - please check that the graph " << config.graph << " exists!"
+            << std::endl;
+  return 1;
 }
