@@ -3,29 +3,9 @@ import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
 dimfile = "data/dimension/europe_osm_reduced.dat"
-dimfile2 = "data/dimension/europe_osm.dat"
 outfile = "plots/out/europe_osm.pdf"
 
 fig, ax1 = plt.subplots()
-
-print("Reading file {} and writing plot to {}".format(dimfile2, outfile))
-# 1D chain plot
-data = np.loadtxt(dimfile2)
-startnode, sigma, dim = data.T
-startnodes = np.unique(startnode)
-
-sigmas = np.unique(sigma)
-means = np.zeros(sigmas.shape)
-stds = np.zeros(sigmas.shape)
-
-# poor mans implementation of a pivot table
-for ind, s in enumerate(sigmas):
-    relevant_data = data[data[:, 1] == s]
-    dimensions = relevant_data[:, 2]
-    means[ind] = np.mean(dimensions)
-    stds[ind] = np.std(dimensions)
-
-ax1.plot(sigmas, means, c="tab:orange", ls="--")
 
 print("Reading file {} and writing plot to {}".format(dimfile, outfile))
 # 1D chain plot
