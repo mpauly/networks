@@ -27,7 +27,7 @@ log_file={base_dir}/logs/{name}_{batch_id}.log
 echo "------------------------------------------------------------------------" >> $log_file
 echo "Job started on" `date`  >> $log_file
 echo "------------------------------------------------------------------------"  >> $log_file
-nice -19 ./queue_walk.x -i {interval} -W {start_walk} -w {batch_size} -l {walk_length} graphs/{name}.dat  >> $log_file
+nice -19 ./queue_walk.x -i {interval} -W {start_walk} -w {batch_size} -l {walk_length} {name}  >> $log_file
 echo "------------------------------------------------------------------------"  >> $log_file
 echo "Job ended on" `date`  >> $log_file
 echo "------------------------------------------------------------------------"  >> $log_file
