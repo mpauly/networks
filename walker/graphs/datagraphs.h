@@ -63,6 +63,7 @@ void make_internet_caida_large() {
       std::cout << "Read " << count << " links" << std::endl;
   }
   std::cout << "Total: " << count << " links" << std::endl;
+  G = TSnap::GetMxWcc(G);
   save_graph_to_file(G, walker::GRAPH_DIR + "internet_caida_large.dat");
 }
 
