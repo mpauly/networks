@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-dimfile = "data/dim_grid.dat"
+dimfile = "data/dimension/dim_grid.dat"
 
 print("Reading file {}".format(dimfile))
 # 1D chain plot
@@ -17,4 +17,4 @@ plt.legend()
 plt.xlabel("$\\sigma$")
 plt.ylabel("$d_{\\rm spec}$")
 # plt.xlim(0, 1000)
-plt.savefig("plots/out/dim_grid.pdf")
+plt.savefig("plots/out/grid.pdf")

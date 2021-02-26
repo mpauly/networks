@@ -7,8 +7,8 @@ from scipy.signal import argrelextrema
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
 
-dimfile = "data/dim_fly-drosophila-large.dat"
-outfile = "plots/out/dim_drosophila_large.pdf"
+dimfile = "data/dimension/fly-drosophila-large.dat"
+outfile = "plots/out/drosophila_large.pdf"
 
 target_dimension = 3
 hist_scale = 30

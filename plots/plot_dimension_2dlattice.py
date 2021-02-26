@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
-dimfile = "data/dim_2d_lattice_100.dat"
-outfile = "plots/out/dim_2d_lattice_100.pdf"
+dimfile = "data/dimension/2d_lattice_100.dat"
+outfile = "plots/out/2d_lattice_100.pdf"
 
 target_dimension = 2
 inset_sigma = 1000

@@ -8,11 +8,11 @@ from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
 
-dimfile = "data/dim_roadnet_pa.dat"
-outfile = "plots/out/dim_roadnet_pa.pdf"
-outfile_log = "plots/out/dim_roadnet_pa_log.pdf"
-convergence_file = "plots/out/dim_roadnet_pa_convergence.pdf"
-convergence_file_2 = "plots/out/dim_roadnet_pa_convergence_2.pdf"
+dimfile = "data/dimension/roadnet_pa.dat"
+outfile = "plots/out/roadnet_pa.pdf"
+outfile_log = "plots/out/roadnet_pa_log.pdf"
+convergence_file = "plots/out/roadnet_pa_convergence.pdf"
+convergence_file_2 = "plots/out/roadnet_pa_convergence_2.pdf"
 
 print("Reading file {} and writing plot to {}".format(dimfile, outfile))
 # 1D chain plot
@@ -142,7 +142,13 @@ y = data_pivot.index.values
 z = data_pivot.values
 xi, yi = np.meshgrid(x, y)
 cs = plt.contourf(
-    yi, xi, z, alpha=0.7, cmap=plt.cm.jet, levels=np.linspace(1.5, 2.5, 11)
+    yi,
+    xi,
+    z,
+    alpha=0.7,
+    cmap=plt.cm.jet,
+    # levels=np.linspace(0, 0.25, 11)
+    levels=np.linspace(1.5, 2.5, 11),
 )
 
 plt.xlabel("$\\sigma$")

@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
-dimfile = "data/dim_brain.dat"
-outfile = "plots/out/dim_brain.pdf"
+dimfile = "data/dimension/brain.dat"
+outfile = "plots/out/brain.pdf"
 
 target_dimension = 3
 hist_scale = 20

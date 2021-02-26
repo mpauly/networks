@@ -8,7 +8,9 @@ from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
 
-dimfile = "data/dim_ring_random.dat"
+dim_dir = "data/dimension/"
+
+dimfile = dim_dir + "ring_random.dat"
 
 reference_delta = 0.2
 reference_conn = 200
@@ -37,7 +39,7 @@ plt.xlim(0, 200)
 
 fig = plt.gcf()
 fig.set_size_inches(5.52, 3.41)
-fig.savefig("plots/out/dim_ring_1.pdf", bbox_inches="tight")
+fig.savefig("plots/out/ring_1.pdf", bbox_inches="tight")
 
 plt.clf()
 
@@ -54,13 +56,13 @@ plt.xlim(0, 200)
 
 fig = plt.gcf()
 fig.set_size_inches(5.52, 3.41)
-fig.savefig("plots/out/dim_ring_2.pdf", bbox_inches="tight")
+fig.savefig("plots/out/ring_2.pdf", bbox_inches="tight")
 
 plt.clf()
 
 # third plot
 
-dimfile = "data/dim_ring.dat"
+dimfile = dim_dir + "ring.dat"
 print("Reading file {}".format(dimfile))
 diffusion_const, sigma, dim = np.loadtxt(dimfile, unpack=True)
 diffusion_const_values = np.unique(diffusion_const)
@@ -96,14 +98,14 @@ plt.semilogy()
 
 fig = plt.gcf()
 fig.set_size_inches(5.52, 3.41)
-fig.savefig("plots/out/dim_ring_3.pdf", bbox_inches="tight")
+fig.savefig("plots/out/ring_3.pdf", bbox_inches="tight")
 
 plt.clf()
 
 # fourth plot
 max_sigma_inset = 200
 
-dimfile = "data/dim_ring_random_maxlength.dat"
+dimfile = dim_dir + "ring_random_maxlength.dat"
 print("Reading file {}".format(dimfile))
 rand_conn, sigma, dim = np.loadtxt(dimfile, unpack=True)
 rand_conn_vals = np.unique(rand_conn)
@@ -137,4 +139,4 @@ for rc in rand_conn_vals:
 
 fig = plt.gcf()
 fig.set_size_inches(5.52, 3.41)
-fig.savefig("plots/out/dim_ring_4.pdf", bbox_inches="tight")
+fig.savefig("plots/out/ring_4.pdf", bbox_inches="tight")

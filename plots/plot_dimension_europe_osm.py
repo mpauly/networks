@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
-dimfile = "data/dim_europe_osm_reduced.dat"
-dimfile2 = "data/dim_europe_osm.dat"
-outfile = "plots/out/dim_europe_osm.pdf"
+dimfile = "data/dimension/europe_osm_reduced.dat"
+dimfile2 = "data/dimension/europe_osm.dat"
+outfile = "plots/out/europe_osm.pdf"
 
 fig, ax1 = plt.subplots()
 

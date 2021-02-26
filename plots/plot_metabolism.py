@@ -8,8 +8,8 @@ from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
 
-dimfile = "data/dim_metabolism.dat"
-outfile = "plots/out/dim_metabolism.pdf"
+dimfile = "data/dimension/metabolism.dat"
+outfile = "plots/out/metabolism.pdf"
 
 print("Reading file {} and writing plot to {}".format(dimfile, outfile))
 # 1D chain plot

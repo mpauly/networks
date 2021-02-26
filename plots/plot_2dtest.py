@@ -5,7 +5,7 @@ outfile = "plots/out/2dtest.pdf"
 
 for j in range(9):
     i = 9 - j
-    dimfile = "data/2dtest/d0{}.dat".format(i)
+    dimfile = "data/dimension/2dtest/d0{}.dat".format(i)
     print("Reading file {} ".format(dimfile))
     # 1D chain plot
     startnode, sigma, dim = np.loadtxt(dimfile, unpack=True)
