@@ -165,7 +165,7 @@ void make_drosophila_large_network() {
     }
     osmfile.close();
 
-    save_graph_to_file(G, walker::GRAPH_DIR + "fly-drosophila-weighted.dat");
+    save_graph_to_file(G, walker::NETWORK_DIR + "fly-drosophila-weighted.dat");
   }
 }
 
