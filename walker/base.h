@@ -41,6 +41,14 @@ std::vector<double> spectralDimensionAtNode(const PGraph &Graph, const int &star
   return walk.dimension;
 }
 
+double get_subnode_probability(const int &node_degree, const typename TIntNEDNet::TNodeI &node, const int &child_node) {
+  return node.GetOutEDat(child_node) / ((double)node.GetDat());
+}
+
+double get_subnode_probability(const int &node_degree, const typename TUNGraph::TNodeI &node, const int &child_node) {
+  return 1.0 / ((double)node_degree);
+}
+
 // The implementation roughly corresponds to a breadth-first search tree.
 // Inspired by SNAP's DoBfs
 template <class PGraph>
@@ -54,6 +62,7 @@ void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps,
   THash<TInt, double> last_lvl_probabilities = walk.lvl_probabilities;
   int childnode;
   double probability_derivative, node_probability;
+  double child_node_probability;
 
   // setup the queue
   queue.Clr(false);
@@ -100,7 +109,8 @@ void progressRandomWalk(const PGraph &Graph, RandomWalk &walk, int nr_of_steps,
           node_probability = 0.0;
           queue.Push(childId);
         }
-        node_probability += walk.diffusion_constant * last_lvl_probabilities.GetDat(nodeId) / ((double)nodeDegree);
+        child_node_probability = get_subnode_probability(nodeDegree, NodeI, childnode);
+        node_probability += walk.diffusion_constant * last_lvl_probabilities.GetDat(nodeId) * child_node_probability;
         if (WALKER_DEBUG)
           printf(" %d : %f ", childId, node_probability);
         // AddDat also overwrites an existing entry

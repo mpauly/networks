@@ -1,4 +1,5 @@
 #include "walker/base.h"
+#include "walker/consts.h"
 #include "walker/io.h"
 #include <filesystem>
 #include <iostream>
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]) {
   std::cout << std::endl;
 
   // Table content
-  std::string path = "walks/" + graph_name;
+  std::string path = walker::WALK_DIR + graph_name;
   walker::RandomWalk walk;
   if (filter_walks) {
     walk = walker::importRandomWalkFromBinaryFile(path + "/" + std::to_string(walk_id) + ".bin.dat", true);

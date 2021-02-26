@@ -1,4 +1,5 @@
 #include "Snap.h"
+#include "walker/consts.h"
 #include <fstream>
 #include <string>
 
@@ -16,7 +17,7 @@ void save_graph_to_file(PUNGraph G, std::string filename) {
 
 // ------------------ the main function -----------------------
 int main(int argc, char *argv[]) {
-  const string graph_dir = "graphs/";
+  const string graph_dir = walker::GRAPH_DIR;
 
   typedef PUNGraph PGraph; // undirected graph
 

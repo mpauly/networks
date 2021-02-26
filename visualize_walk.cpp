@@ -9,6 +9,7 @@
 
 namespace fs = std::filesystem;
 
+// gives different shades of blue as a function of value in [0,1]
 TStr get_color(double value) {
   char hex[9];
   sprintf(hex, "#%02x%02x%02x%02x", 0, 0, 255, (int)(255 * value));

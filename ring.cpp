@@ -1,5 +1,6 @@
 #include "Snap.h"
 #include "walker/base.h"
+#include "walker/consts.h"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]) {
     double diffusion_consts[7] = {0.05, 0.2, 0.35, 0.5, 0.65, 0.8, 0.95};
 
     std::ofstream dimfile;
-    dimfile.open("data/dim_ring.dat", std::ofstream::out);
+    dimfile.open(walker::DIMENSION_DIR + "ring.dat", std::ofstream::out);
     dimfile << "# dimensions for ring with length " << ring_length << std::endl;
     dimfile << "# start_node: " << STARTNODE_REGULAR << std::endl;
     dimfile << "# walk length: " << WALKLENGTH_REGULAR << std::endl;
@@ -73,7 +74,7 @@ int main(int argc, char *argv[]) {
                                           {200, 0.2},  {400, 0.2},  {600, 0.2}, {800, 0.2},  {1000, 0.2}, {2000, 0.2}};
 
     std::ofstream dimfile;
-    dimfile.open("data/dim_ring_random.dat", std::ofstream::out);
+    dimfile.open(walker::DIMENSION_DIR + "ring_random.dat", std::ofstream::out);
     dimfile << "# average dimensions for ring with length " << ring_length << " and random connections" << std::endl;
     dimfile << "# averaging over all start_nodes " << std::endl;
     dimfile << "# walk length: " << WALKLENGTH_RANDOM << std::endl;
@@ -137,7 +138,7 @@ int main(int argc, char *argv[]) {
     std::vector<int> random_connections = {0, 50, 100, 200};
 
     std::ofstream dimfile;
-    dimfile.open("data/dim_ring_random_maxlength.dat", std::ofstream::out);
+    dimfile.open(walker::DIMENSION_DIR + "ring_random_maxlength.dat", std::ofstream::out);
     dimfile << "# average dimensions for ring with length " << ring_length
             << " and random connections of maximum length " << max_length << std::endl;
     dimfile << "# averaging over all start_nodes " << std::endl;

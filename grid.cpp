@@ -1,5 +1,6 @@
 #include "Snap.h"
 #include "walker/base.h"
+#include "walker/consts.h"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -19,7 +20,7 @@ int main(int argc, char *argv[]) {
   PGraph G = PGraph::TObj::New();
 
   std::ofstream dimfile;
-  dimfile.open("data/dim_grid.dat", std::ofstream::out);
+  dimfile.open(walker::DIMENSION_DIR + "grid.dat", std::ofstream::out);
 
   dimfile << "# dimensions for grid with length " << EDGE_LENGTH << std::endl;
   dimfile << "# start_node: " << STARTNODE << std::endl;
