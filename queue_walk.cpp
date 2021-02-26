@@ -20,6 +20,7 @@ struct WalkConfig {
   int limit_length = -1;
   double diffusion_constant = 0.5;
   std::string graph;
+  std::string graph_file;
 };
 
 void print_usage() {
@@ -43,13 +44,12 @@ void print_usage() {
 
 template <class Graph> int process_network_or_graph(WalkConfig config) {
   std::string walk_dirname = walker::WALK_DIR + config.graph + '/';
-  std::string graph_filename = walker::GRAPH_DIR + config.graph + ".dat";
   TPt<Graph> G;
   try {
-    TFIn FIn(graph_filename.c_str());
+    TFIn FIn(config.graph_file.c_str());
     G = Graph::Load(FIn);
   } catch (...) {
-    std::cerr << "Error reading file " << graph_filename << std::endl;
+    std::cerr << "Error reading file " << config.graph_file << std::endl;
     return 1;
   }
 
@@ -170,15 +170,15 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  std::string graph_filename = walker::GRAPH_DIR + config.graph + ".dat";
-  if (fs::exists(graph_filename)) {
-    std::cout << "- Loading graph file " << graph_filename << std::endl;
+  config.graph_file = walker::GRAPH_DIR + config.graph + ".dat";
+  if (fs::exists(config.graph_file)) {
+    std::cout << "- Loading graph file " << config.graph_file << std::endl;
     return process_network_or_graph<TUNGraph>(config);
   }
 
-  graph_filename = walker::NETWORK_DIR + config.graph + ".dat";
-  if (fs::exists(graph_filename)) {
-    std::cout << "- Loading network file " << graph_filename << std::endl;
+  config.graph_file = walker::NETWORK_DIR + config.graph + ".dat";
+  if (fs::exists(config.graph_file)) {
+    std::cout << "- Loading network file " << config.graph_file << std::endl;
     return process_network_or_graph<TIntNEDNet>(config);
   }
 
