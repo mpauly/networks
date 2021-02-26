@@ -9,7 +9,12 @@ The large drosophila brain dataset is the one described in [this preprint](https
 
 ## Brain
 The brain dataset is from [neurodata.io](https://neurodata.io/mri/) and the dataset BNU1, with the download here [Download](https://mrneurodata.s3.amazonaws.com/data/BNU1/ndmg_0-0-48/graphs/DS72784/sub-0025864_ses-1_dwi_DS72784.gpickle).
-BNU1 refers to Beijing Normal University, scans are of healthy young adults. We convert the gpickle file by taking it apart (there are various issues related to python2 and python3), and writing a new file. Note that the edges here come with a weight - for now we simply ignore this weight when converting to a graph.
+BNU1 refers to Beijing Normal University, scans are of healthy young adults. We convert the gpickle file by taking it apart (there are various issues related to python2 and python3), and writing a new file. Note that the edges here come with a weight — for now we simply ignore this weight when converting to a graph.
 
 ## Metabolism
 The metabolism dataset is a reaction network from [KEGG](https://www.genome.jp/kegg/pathway.html). We are just considering reactions, and only take into account the largest connected component of the resulting graph. The graph that we are considering is [this one](https://www.kegg.jp/kegg-bin/show_pathway?rn01100).
+
+## Internet
+Files can be downloaded from CAIDA after [registration](https://www.caida.org/data/request_user_info_forms/ark.xml).
+Then just extract the AS ids like so: 
+`cat cycle-aslinks.l7.t1.c008218.20200228.txt | grep "^D" | awk '{print $2,$3}' - > edges.dat`.
