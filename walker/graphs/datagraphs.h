@@ -191,13 +191,21 @@ void make_rat_voxel_brain() {
     int node_count = 0;
     int edge_count = 0;
     while (std::getline(ratfile, line)) {
+      // skip lines that are too short
+      if (line.length() < 5)
+        continue;
       std::istringstream iss(line);
-      std::getline(iss, token, ',');
-      in_id = std::stol(token);
-      std::getline(iss, token, ',');
-      out_id = std::stol(token);
-      std::getline(iss, token, ',');
-      weight = (int)(upscaling_factor * std::stof(token));
+      try {
+        std::getline(iss, token, ',');
+        in_id = std::stoi(token);
+        std::getline(iss, token, ',');
+        out_id = std::stoi(token);
+        std::getline(iss, token, ',');
+        weight = (int)(upscaling_factor * std::stof(token));
+      } catch (const std::exception &ex) {
+        std::cerr << ex.what() << '\n';
+        std::cerr << "line: " << line << std::endl;
+      }
       if (!G->IsNode(in_id)) {
         G->AddNode(in_id);
         node_count++;
