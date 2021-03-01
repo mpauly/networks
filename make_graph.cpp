@@ -12,6 +12,7 @@ int main(int argc, char *argv[]) {
       {"drosophila", make_drosophila},
       {"drosophila_large", make_drosophila_large},
       {"drosophila_large_network", make_drosophila_large_network},
+      {"rat_voxel_brain", make_rat_voxel_brain},
       {"europe_osm", make_europe_osm},
       {"brain", make_brain},
       // test graphs

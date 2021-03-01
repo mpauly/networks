@@ -169,7 +169,67 @@ void make_drosophila_large_network() {
     save_graph_to_file(G, walker::NETWORK_DIR + "fly-drosophila-weighted.dat");
   }
 }
+// =============== Rat Voxel Brain ===============================
+void make_rat_voxel_brain() {
+  std::cout << "== Writing Rat Voxel Brain Network ==" << std::endl;
+  auto G = TNodeEDatNet<TInt, TInt>::New();
+  // we are scaling the floats to ints by multiplying by the following factor
+  const int upscaling_factor = 1000000;
 
+  std::fstream ratfile;
+  int rows, columns, entries;
+  ratfile.open(walker::DATA_DIR + "rat_voxel_brain.csv", std::ios::in);
+
+  if (ratfile.is_open()) {
+    std::string line;
+    std::string token;
+
+    int in_id, out_id, weight;
+
+    int id_counter;
+
+    int node_count = 0;
+    int edge_count = 0;
+    while (std::getline(ratfile, line)) {
+      std::istringstream iss(line);
+      std::getline(iss, token, ',');
+      in_id = std::stol(token);
+      std::getline(iss, token, ',');
+      out_id = std::stol(token);
+      std::getline(iss, token, ',');
+      weight = (int)(upscaling_factor * std::stof(token));
+      if (!G->IsNode(in_id)) {
+        G->AddNode(in_id);
+        node_count++;
+      }
+      if (!G->IsNode(out_id)) {
+        G->AddNode(out_id);
+        node_count++;
+      }
+
+      G->AddEdge(in_id, out_id, weight);
+      G->AddEdge(out_id, in_id, weight);
+      edge_count++;
+    }
+
+    std::cout << " Built network with " << node_count << " nodes and " << edge_count
+              << " edges - precomputing nodecount next" << std::endl;
+    // loop over nodes and compute summed weights for this node
+    int childnode, nodecount;
+    for (TNodeEDatNet<TInt, TInt>::TNodeI NI = G->BegNI(); NI < G->EndNI(); NI++) {
+      nodecount = 0;
+      const int nodeDegree = NI.GetOutDeg();
+      for (childnode = 0; childnode < nodeDegree; childnode++) {
+        const int childId = NI.GetOutNId(childnode);
+        nodecount += NI.GetOutEDat(childnode);
+      }
+      G->SetNDat(NI.GetId(), nodecount);
+    }
+    ratfile.close();
+
+    save_graph_to_file(G, walker::NETWORK_DIR + "rat_voxel_brain.dat");
+  }
+}
 // =============== Europe OSM map ===============================
 void make_europe_osm() {
   std::cout << "== Writing Europe OSM graph ==" << std::endl;
