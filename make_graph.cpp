@@ -15,6 +15,7 @@ int main(int argc, char *argv[]) {
       {"rat_voxel_brain", make_rat_voxel_brain},
       {"europe_osm", make_europe_osm},
       {"brain", make_brain},
+      {"human_brain_regions_300", make_human_brain_regions_300},
       // test graphs
       {"1d_ring_26", make_1d_ring_26},
       {"1d_ring_100", make_1d_ring_100},

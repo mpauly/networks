@@ -238,6 +238,44 @@ void make_rat_voxel_brain() {
     save_graph_to_file(G, walker::NETWORK_DIR + "rat_voxel_brain.dat");
   }
 }
+// =============== Human Connectome Project (HCP) netmat - regions of the brain ==========================
+void make_human_brain_regions_300() {
+  std::cout << "== Writing human_brain_regions_300 ==" << std::endl;
+  auto G = TNodeEDatNet<TInt, TInt>::New();
+  const int matrix_size = 300;
+  std::array<std::array<int, matrix_size>, matrix_size> matrix;
+
+  std::fstream matrixfile;
+  std::string line, token;
+  const int upscaling_factor = 100000;
+  int weight;
+  matrixfile.open(walker::DATA_DIR + "hcp1200_netmat_d300.tsv", std::ios::in);
+  for (int i = 0; i < matrix_size; i++)
+    G->AddNode(i);
+  for (int i = 0; i < matrix_size; i++) {
+    std::getline(matrixfile, line);
+    std::istringstream iss(line);
+    for (int j = 0; j < i; j++) {
+      std::getline(iss, token, '\t');
+      weight = abs((int)(upscaling_factor * std::stof(token)));
+      G->AddEdge(i, j, weight);
+      G->AddEdge(j, i, weight);
+    }
+  }
+
+  int childnode, nodecount;
+  for (TNodeEDatNet<TInt, TInt>::TNodeI NI = G->BegNI(); NI < G->EndNI(); NI++) {
+    nodecount = 0;
+    const int nodeDegree = NI.GetOutDeg();
+    for (childnode = 0; childnode < nodeDegree; childnode++) {
+      const int childId = NI.GetOutNId(childnode);
+      nodecount += NI.GetOutEDat(childnode);
+    }
+    G->SetNDat(NI.GetId(), nodecount);
+  }
+
+  save_graph_to_file(G, walker::NETWORK_DIR + "human_brain_regions_300.dat");
+}
 // =============== Europe OSM map ===============================
 void make_europe_osm() {
   std::cout << "== Writing Europe OSM graph ==" << std::endl;
