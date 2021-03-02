@@ -1,3 +1,4 @@
+# %%
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -5,23 +6,27 @@ import pandas as pd
 from matplotlib.collections import LineCollection
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
+# %%
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
 
-dimfile = "data/dimension/roadnet_pa.dat"
-outfile = "plots/out/roadnet_pa.pdf"
-outfile_log = "plots/out/roadnet_pa_log.pdf"
-convergence_file = "plots/out/roadnet_pa_convergence.pdf"
-convergence_file_2 = "plots/out/roadnet_pa_convergence_2.pdf"
-
+# %%
+dimfile = "../data/dimension/roadnet_pa.dat"
+outfile = "../plots/out/roadnet_pa.pdf"
+outfile_log = "../plots/out/roadnet_pa_log.pdf"
+convergence_file = "../plots/out/roadnet_pa_convergence.pdf"
+convergence_file_2 = "../plots/out/roadnet_pa_convergence_2.pdf"
+convergence_file_3 = "../plots/out/roadnet_pa_convergence_3.pdf"
+# %%
 print("Reading file {} and writing plot to {}".format(dimfile, outfile))
 # 1D chain plot
 data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
 startnodes = pd.unique(data["start_node"])
 
+# %%
 data_plot = np.array(list(data.groupby("start_node").apply(pd.DataFrame.to_numpy)))
 data_plot = data_plot[:, :, 1:]
-
+# %%
 fig, ax1 = plt.subplots()
 ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
 ax1.set_ylim(0, 5)
@@ -67,13 +72,15 @@ ax2.axvline(2, color="tab:green", ls="--")
 fig = plt.gcf()
 fig.set_size_inches(5.52, 3.41)
 fig.savefig(outfile, bbox_inches="tight")
-
+# %%
 ax1.semilogx()
 fig.savefig(outfile_log, bbox_inches="tight")
 
-plt.clf()
+# %% [markdown]
+# ## Convergence Plots
 
-# ------------- convergence plot ----------------------
+# %%
+plt.clf()
 
 nr_of_bins = 4
 
@@ -120,9 +127,9 @@ fig = plt.gcf()
 fig.set_size_inches(5.52, 3.41)
 fig.savefig(convergence_file, bbox_inches="tight")
 
-plt.clf()
+# %%
 
-# ------------- convergence plot 2 ----------------------
+plt.clf()
 
 sigmas_per_startnode = data[data["start_node"] == 950557].shape[0]
 
@@ -159,3 +166,35 @@ cbar = fig.colorbar(cs)
 cbar.ax.set_ylabel("$\\bar{d}_{\\rm spec}(N)$", rotation=90)
 fig.set_size_inches(5.52, 3.41)
 fig.savefig(convergence_file_2, bbox_inches="tight")
+
+# %%
+data["start_node_n"] = data.index / sigmas_per_startnode
+data["start_node_n"] = data["start_node_n"].round()
+
+# %%
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(11.04, 3.41))
+for ind, fixed_sigma in enumerate([1000, 5000, 25000]):
+    data_fixed_sigma = data[data["sigma"] == fixed_sigma]
+    data_fixed_sigma["dim_rmean"] = data_fixed_sigma["dim"].expanding().mean()
+    data_fixed_sigma["dim_rstd"] = data_fixed_sigma["dim"].expanding().std()
+    data_fixed_sigma.plot(
+        ax=ax[ind],
+        x="start_node_n",
+        y=["dim", "dim_rmean"],
+        label=["$d_{\\rm spec}$", "$\\bar{d}_{\\rm spec}$"],
+    )
+    ax[ind].set_xlabel("$N$")
+    ax[ind].set_ylim(1.0, 3.5)
+    # ax[ind].set_ylabel("$\\bar{d}_{\\rm spec}(N)$")
+    ax[ind].set_title("$\\sigma={}$".format(fixed_sigma))
+    ax[ind].fill_between(
+        data_fixed_sigma["start_node_n"],
+        data_fixed_sigma["dim_rmean"] + data_fixed_sigma["dim_rstd"],
+        data_fixed_sigma["dim_rmean"] - data_fixed_sigma["dim_rstd"],
+        alpha=0.5,
+        color=ax1.lines[-1].get_color(),
+    )
+# %%
+fig.set_size_inches(11.04, 3.41)
+fig.savefig(convergence_file_3, bbox_inches="tight")
+# %%
