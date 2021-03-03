@@ -16,12 +16,13 @@ data = pd.read_table(dimfile)
 # Different diffusion constants do not matter for the general finding
 
 # %%
+ref_degree = 4
 format_din = (11.04, 3.41)
 fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(15, 4))
 for ind, diffconst in enumerate([0.25, 0.5, 0.75]):
-    for name, group in data[data["diffusion_const"] == diffconst].groupby(
-        "rewiring_prob"
-    ):
+    for name, group in data[
+        (data["diffusion_const"] == diffconst) & (data["degree"] == ref_degree)
+    ].groupby("rewiring_prob"):
         ax[ind].plot(group["sigma"], group["dim"], label="$\\beta={}$".format(name))
     ax[ind].legend()
     ax[ind].set_xlim(0, 200)
@@ -35,7 +36,9 @@ for ind, diffconst in enumerate([0.25, 0.5, 0.75]):
 # %%
 fig.clf()
 ax = fig.gca()
-for name, group in data[data["diffusion_const"] == 0.5].groupby("rewiring_prob"):
+for name, group in data[
+    (data["diffusion_const"] == 0.5) & (data["degree"] == ref_degree)
+].groupby("rewiring_prob"):
     ax.plot(group["sigma"], group["dim"], label="$\\beta={}$".format(name))
 ax.legend()
 ax.set_xlim(0, 200)
@@ -44,5 +47,20 @@ ax.set_ylabel("$d_{\\rm spec}$")
 ax.set_title("$\\delta={}$".format(0.5))
 fig
 
+
+# %%
+ref_delta = 0.5
+format_din = (11.04, 3.41)
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(15, 4))
+for ind, degree in enumerate([2, 4, 6]):
+    for name, group in data[
+        (data["diffusion_const"] == ref_delta) & (data["degree"] == degree)
+    ].groupby("rewiring_prob"):
+        ax[ind].plot(group["sigma"], group["dim"], label="$\\beta={}$".format(name))
+    ax[ind].legend()
+    ax[ind].set_xlim(0, 200)
+    ax[ind].set_xlabel("$\\sigma$")
+    ax[ind].set_ylabel("$d_{\\rm spec}$")
+    ax[ind].set_title("$\\delta={}, D={}$".format(ref_delta, degree))
 
 # %%
