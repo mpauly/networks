@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   const int nr_of_startnodes = 25;
   const int walk_length = 200;
   const std::vector<double> diffusion_constants = {0.25, 0.5, 0.75};
-  const std::vector<double> rewiring_probs = {0.0, 0.05, 0.1, 0.15, 0.2, 0.4, 0.6, 0.8};
+  const std::vector<double> rewiring_probs = {0.0, 0.025, 0.05, 0.1, 0.15, 0.2, 0.4, 0.6, 0.8};
 
   std::ofstream dimfile;
   dimfile.open(walker::DIMENSION_DIR + "watts_strogatz.dat", std::ofstream::out);
