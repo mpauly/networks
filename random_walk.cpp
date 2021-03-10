@@ -151,7 +151,7 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
         }
         std::string comment = "Random walk of graph " + config.graph;
 
-        walker::exportRandomWalkToBinaryFile(random_walk, config.walk_dir + std::to_string(walk) + ".bin.dat");
+        walker::exportRandomWalkToBinaryFile(random_walk, config.walk_dir + "/" + std::to_string(walk) + ".bin.dat");
       }
 
       for (int sigma = 1; sigma < random_walk.dimension.size() - 1; sigma++) {
