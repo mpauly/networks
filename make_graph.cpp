@@ -23,6 +23,7 @@ int main(int argc, char *argv[]) {
       {"2d_lattice_10", make_2d_lattice_10},
       {"2d_lattice_100", make_2d_lattice_100},
       {"3d_lattice_100", make_3d_lattice_100},
+      {"3d_lattice_7", make_3d_lattice_7},
       {"watts_strogatz_2d", make_ws_2d},
       {"watts_strogatz_3d", make_ws_3d},
   };

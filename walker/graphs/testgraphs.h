@@ -4,8 +4,8 @@
 #include <fstream>
 #include <string>
 
-#define INDEXAT2D(x, y, edge) ((x)*edge + y)
-#define INDEXAT3D(x, y, z, edge) ((x)*edge * edge + (y)*edge + z)
+#define INDEXAT2D(x, y, edge) ((x) * (edge) + y)
+#define INDEXAT3D(x, y, z, edge) ((x) * (edge) * (edge) + (y) * (edge) + z)
 
 using namespace std;
 
@@ -94,17 +94,24 @@ void make_2d_lattice_100() {
     G->AddNode(); // if no parameter is given, node ids are 0,1,...
   }
   // Build a square
-  for (int n = 0; n < edge_length - 1; n++) {
-    for (int m = 0; m < edge_length - 1; m++) {
-      G->AddEdge(INDEXAT2D(n, m, edge_length), INDEXAT2D(n + 1, m, edge_length));
-      G->AddEdge(INDEXAT2D(n, m, edge_length), INDEXAT2D(n, m + 1, edge_length));
+  for (int n = 0; n < edge_length; n++) {
+    for (int m = 0; m < edge_length; m++) {
+      if (n + 1 < edge_length)
+        G->AddEdge(INDEXAT2D(n, m, edge_length), INDEXAT2D(n + 1, m, edge_length));
+      if (m + 1 < edge_length)
+        G->AddEdge(INDEXAT2D(n, m, edge_length), INDEXAT2D(n, m + 1, edge_length));
     }
+  }
+  // and repair the surface
+  const int last_ind = edge_length - 1;
+  for (int n = 0; n < edge_length - 1; n++) {
+    G->AddEdge(INDEXAT2D(last_ind, n, edge_length), INDEXAT2D(last_ind, n + 1, edge_length));
+    G->AddEdge(INDEXAT2D(n, last_ind, edge_length), INDEXAT2D(n + 1, last_ind, edge_length));
   }
   save_graph_to_file(G, walker::GRAPH_DIR + "2d_lattice_" + to_string(edge_length) + ".dat");
 }
 // ================== 3D lattice ===================================
-void make_3d_lattice_100() {
-  const int edge_length = 100;
+void make_3d_lattice(const int edge_length) {
   printf("== Making 3D grid with length %d ==\n", edge_length);
   PUNGraph G = PUNGraph::TObj::New();
   for (int n = 0; n < edge_length * edge_length * edge_length; n++) {
@@ -112,17 +119,22 @@ void make_3d_lattice_100() {
   }
 
   // Build a cube
-  for (int n1 = 0; n1 < edge_length - 1; n1++) {
-    for (int n2 = 0; n2 < edge_length - 1; n2++) {
-      for (int n3 = 0; n3 < edge_length - 1; n3++) {
-        G->AddEdge(INDEXAT3D(n1, n2, n3, edge_length), INDEXAT3D(n1 + 1, n2, n3, edge_length));
-        G->AddEdge(INDEXAT3D(n1, n2, n3, edge_length), INDEXAT3D(n1, n2 + 1, n3, edge_length));
-        G->AddEdge(INDEXAT3D(n1, n2, n3, edge_length), INDEXAT3D(n1, n2, n3 + 1, edge_length));
+  for (int n1 = 0; n1 < edge_length; n1++) {
+    for (int n2 = 0; n2 < edge_length; n2++) {
+      for (int n3 = 0; n3 < edge_length; n3++) {
+        if (n1 + 1 < edge_length)
+          G->AddEdge(INDEXAT3D(n1, n2, n3, edge_length), INDEXAT3D(n1 + 1, n2, n3, edge_length));
+        if (n2 + 1 < edge_length)
+          G->AddEdge(INDEXAT3D(n1, n2, n3, edge_length), INDEXAT3D(n1, n2 + 1, n3, edge_length));
+        if (n3 + 1 < edge_length)
+          G->AddEdge(INDEXAT3D(n1, n2, n3, edge_length), INDEXAT3D(n1, n2, n3 + 1, edge_length));
       }
     }
   }
   save_graph_to_file(G, walker::GRAPH_DIR + "3d_lattice_" + to_string(edge_length) + ".dat");
 }
+void make_3d_lattice_100() { make_3d_lattice(100); }
+void make_3d_lattice_7() { make_3d_lattice(7); }
 // =================== multi-dimensional generalization of WS ===========
 void make_ws_2d() {
   const int edge_length = 100;
