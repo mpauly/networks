@@ -4,12 +4,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.collections import LineCollection
+from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
 # %%
 dimfile = "../data/dimension/watts_strogatz.dat"
-
-
-# %%
 data = pd.read_table(dimfile)
 
 # %% [markdown]
@@ -62,5 +61,111 @@ for ind, degree in enumerate([2, 4, 6]):
     ax[ind].set_xlabel("$\\sigma$")
     ax[ind].set_ylabel("$d_{\\rm spec}$")
     ax[ind].set_title("$\\delta={}, D={}$".format(ref_delta, degree))
+
+# %%
+dimfile = "../data/dimension/watts_strogatz_2d_100.dat"
+data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
+data_plot = np.array(list(data.groupby("start_node").apply(pd.DataFrame.to_numpy)))
+data_plot = data_plot[:, :, 1:]
+#%%
+mean_per_sigma = data.groupby("sigma").mean()
+std_dev_per_sigma = data.groupby("sigma").agg(np.std, ddof=1)
+print(
+    "Maximum is at {} and has dimension {}".format(
+        mean_per_sigma["dim"].idxmax(), mean_per_sigma["dim"].max()
+    )
+)
+ref_sigma = mean_per_sigma["dim"].idxmax()
+# %%
+plt.clf()
+fig, ax1 = plt.subplots()
+ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
+line_segments = LineCollection(data_plot, alpha=0.2)
+ax1.add_collection(line_segments)
+
+mean_per_sigma["dim"].plot(ax=ax1, color="tab:orange")
+ax1.fill_between(
+    mean_per_sigma.index,
+    mean_per_sigma["dim"] + std_dev_per_sigma["dim"],
+    mean_per_sigma["dim"] - std_dev_per_sigma["dim"],
+    alpha=0.2,
+    color="tab:orange",
+)
+
+ax1.axhline(2, c="tab:green", ls="--")
+ax1.set_xlabel("$\\sigma$")
+ax1.set_ylabel("$d_{\\rm spec}$")
+
+ax2 = plt.axes([0, 0, 1, 1])
+ip = InsetPosition(ax1, [0.65, 0.65, 0.3, 0.3])
+ax2.set_axes_locator(ip)
+
+line_segments = LineCollection(data_plot, alpha=0.2)
+ax2.add_collection(line_segments)
+mean_per_sigma["dim"].plot(ax=ax2, color="tab:orange")
+ax2.fill_between(
+    mean_per_sigma.index,
+    mean_per_sigma["dim"] + std_dev_per_sigma["dim"],
+    mean_per_sigma["dim"] - std_dev_per_sigma["dim"],
+    alpha=0.2,
+    color="tab:orange",
+)
+ax2.set_xlabel("$\\sigma$")
+ax2.set_ylabel("$d_{\\rm spec}$")
+ax2.set_xlim(0, 25)
+
+# %%
+dimfile = "../data/dimension/watts_strogatz_3d_100.dat"
+data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
+data_plot = np.array(list(data.groupby("start_node").apply(pd.DataFrame.to_numpy)))
+data_plot = data_plot[:, :, 1:]
+# %%
+mean_per_sigma = data.groupby("sigma").mean()
+std_dev_per_sigma = data.groupby("sigma").agg(np.std, ddof=1)
+print(
+    "Maximum is at {} and has dimension {}".format(
+        mean_per_sigma["dim"].idxmax(), mean_per_sigma["dim"].max()
+    )
+)
+ref_sigma = mean_per_sigma["dim"].idxmax()
+#%%
+plt.clf()
+fig, ax1 = plt.subplots()
+ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
+line_segments = LineCollection(data_plot, alpha=0.2)
+ax1.add_collection(line_segments)
+
+mean_per_sigma["dim"].plot(ax=ax1, color="tab:orange")
+ax1.fill_between(
+    mean_per_sigma.index,
+    mean_per_sigma["dim"] + std_dev_per_sigma["dim"],
+    mean_per_sigma["dim"] - std_dev_per_sigma["dim"],
+    alpha=0.2,
+    color="tab:orange",
+)
+
+ax1.axhline(3, c="tab:green", ls="--")
+ax1.set_xlabel("$\\sigma$")
+ax1.set_ylabel("$d_{\\rm spec}$")
+
+ax2 = plt.axes([0, 0, 1, 1])
+ip = InsetPosition(ax1, [0.65, 0.65, 0.3, 0.3])
+ax2.set_axes_locator(ip)
+
+line_segments = LineCollection(data_plot, alpha=0.2)
+ax2.add_collection(line_segments)
+mean_per_sigma["dim"].plot(ax=ax2, color="tab:orange")
+ax2.fill_between(
+    mean_per_sigma.index,
+    mean_per_sigma["dim"] + std_dev_per_sigma["dim"],
+    mean_per_sigma["dim"] - std_dev_per_sigma["dim"],
+    alpha=0.2,
+    color="tab:orange",
+)
+
+ax2.set_xlabel("$\\sigma$")
+ax2.set_ylabel("$d_{\\rm spec}$")
+ax2.set_xlim(0, 25)
+
 
 # %%
