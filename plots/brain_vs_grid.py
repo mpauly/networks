@@ -66,5 +66,3 @@ ax1.axhline(3, c="tab:green", ls="--")
 ax1.set_xlabel("$\\sigma$")
 ax1.set_ylabel("$d_{\\rm spec}$")
 # %%
-data[data["dim"].max() == data["dim"]]
-# %%

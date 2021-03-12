@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
   typedef PUNGraph PGraph; // undirected graph
   PUNGraph G;
   try {
-    std::string graph_filename = "graphs/" + graph_name + ".dat";
+    std::string graph_filename = "data/graphs/" + graph_name + ".dat";
     TFIn FIn(graph_filename.c_str());
     G = TUNGraph::Load(FIn);
   } catch (...) {
