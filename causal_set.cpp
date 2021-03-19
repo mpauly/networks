@@ -37,9 +37,9 @@ int main(int argc, char *argv[]) {
   // std::poisson_distribution<int> poisson_distribution(nV);
   std::uniform_real_distribution<double> uni_dist(0.0, 1.0);
 
-  static const int numberPoints = 1e6; // poisson_distribution(generator);
-  static const double euclidean_cutoff1 = 30. / sqrt(numberPoints);
-  static const double euclidean_cutoff2 = 100. / sqrt(numberPoints);
+  const int numberPoints = 1e6; // poisson_distribution(generator);
+  const double euclidean_cutoff1 = 30. / sqrt(numberPoints);
+  const double euclidean_cutoff2 = 100. / sqrt(numberPoints);
 
   std::cout << "Making causal set with " << numberPoints << " points" << std::endl;
   std::vector<std::vector<double>> positions(numberPoints, std::vector<double>(2, 0));
@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
     if (i % ten_percent == 0) {
       std::cout << i * 100 / numberPoints << "% done" << std::endl;
     }
+#pragma omp parallel for
     for (int j = 0; j < i; j++) {
       // these two points are space-like assuming a mostly negative metric
       if (!connected(positions[i], positions[j])) {
@@ -94,17 +95,20 @@ int main(int argc, char *argv[]) {
         }
       }
       if (edge) {
-        Graph->AddEdge(i, j);
-        const double euclidean_dist = euclidean_distance(positions[i], positions[j]);
-        if (euclidean_dist < euclidean_cutoff1) {
-          GraphCutoff1->AddEdge(i, j);
+#pragma omp critical
+        {
+          Graph->AddEdge(i, j);
+          const double euclidean_dist = euclidean_distance(positions[i], positions[j]);
+          if (euclidean_dist < euclidean_cutoff1) {
+            GraphCutoff1->AddEdge(i, j);
+          }
+          if (euclidean_dist < euclidean_cutoff2) {
+            GraphCutoff2->AddEdge(i, j);
+          }
+          edgefile << positions[in][0] << "\t" << positions[in][1] << "\t" << positions[out][0] << "\t"
+                   << positions[out][1] << "\t" << euclidean_dist << "\n";
+          edge_count++;
         }
-        if (euclidean_dist < euclidean_cutoff2) {
-          GraphCutoff2->AddEdge(i, j);
-        }
-        edgefile << positions[in][0] << "\t" << positions[in][1] << "\t" << positions[out][0] << "\t"
-                 << positions[out][1] << "\t" << euclidean_dist << "\n";
-        edge_count++;
       }
     }
   }
