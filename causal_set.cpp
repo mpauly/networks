@@ -117,6 +117,6 @@ int main(int argc, char *argv[]) {
   GraphCutoff1->Defrag();
   GraphCutoff2->Defrag();
   save_graph_to_file(Graph, walker::GRAPH_DIR + "causal_set.dat");
-  save_graph_to_file(Graph, walker::GRAPH_DIR + "causal_set_l30.dat");
-  save_graph_to_file(Graph, walker::GRAPH_DIR + "causal_set_l100.dat");
+  save_graph_to_file(GraphCutoff1, walker::GRAPH_DIR + "causal_set_l30.dat");
+  save_graph_to_file(GraphCutoff2, walker::GRAPH_DIR + "causal_set_l100.dat");
 }
