@@ -8,6 +8,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <string>
 #include <unistd.h>
 
 namespace fs = std::filesystem;
@@ -40,7 +41,8 @@ struct WalkConfig {
   bool file_appending = false;
   bool export_final_state = false;
   bool continue_walk = false;
-  int start_node = 0;
+  bool random_start_nodes = true;
+  std::vector<int> start_node;
   int sigma_max = 100;
   int nr_of_walkers = 1;
   int walker_min_id = 0;
@@ -103,7 +105,7 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
   // positions
   std::vector<int> walker_start_nodes;
   walker_start_nodes.reserve(config.walker_min_id + config.nr_of_walkers);
-  if (config.nr_of_walkers > 1 && !config.continue_walk) {
+  if (config.random_start_nodes && !config.continue_walk) {
     while (walker_start_nodes.size() < config.walker_min_id + config.nr_of_walkers) {
       int candidate = G->GetRndNId();
       // is that start node already in our pool of start nodes?
@@ -111,7 +113,8 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
         walker_start_nodes.push_back(candidate);
     }
   } else {
-    walker_start_nodes[0] = config.start_node;
+    for (int i = 0; i < config.nr_of_walkers; i++)
+      walker_start_nodes[i] = config.start_node[i];
   }
 
 #pragma omp parallel for
@@ -183,8 +186,14 @@ int main(int argc, char *argv[]) {
       config.continue_walk = true;
       config.export_final_state = true;
       break;
-    case 's':
-      config.start_node = atoi(optarg);
+    case 's': {
+      std::stringstream input(optarg);
+      std::string int_str;
+      while (std::getline(input, int_str, ',')) {
+        config.start_node.push_back(std::stoi(int_str));
+      }
+    }
+      config.random_start_nodes = false;
       break;
     case 'l':
       config.sigma_max = atoi(optarg);
@@ -225,8 +234,8 @@ int main(int argc, char *argv[]) {
     std::cout << "- no output file given - will write to " << config.dimension_file << std::endl;
   }
 
-  if (config.nr_of_walkers > 1 && config.start_node > 0) {
-    std::cerr << "Can't give options for number of walkers and start nodes at the same time" << '\n';
+  if (!config.random_start_nodes && config.start_node.size() != config.nr_of_walkers) {
+    std::cerr << "The number of start nodes does not match the number of walks you requested" << '\n';
     print_usage();
     return 1;
   }
