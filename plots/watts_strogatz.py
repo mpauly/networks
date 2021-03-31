@@ -1,5 +1,5 @@
 # %% [markdown]
-# ## Setup
+# ## Watts Strogatz
 # %%
 import matplotlib.pyplot as plt
 import numpy as np
@@ -63,6 +63,12 @@ for ind, degree in enumerate([2, 4, 6]):
     ax[ind].set_title("$\\delta={}, D={}$".format(ref_delta, degree))
 
 # %%
+fig.set_size_inches(11.04, 3.41)
+fig.savefig("../plots/out/watts_strogatz.pdf", bbox_inches="tight")
+# %% [markdown]
+# ## 2D generalization
+# Here $\beta=0.001$, i.e. we are in the case of small deviations from a grid
+# %%
 dimfile = "../data/dimension/watts_strogatz_2d_100.dat"
 data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
 data_plot = np.array(list(data.groupby("start_node").apply(pd.DataFrame.to_numpy)))
@@ -113,7 +119,11 @@ ax2.fill_between(
 ax2.set_xlabel("$\\sigma$")
 ax2.set_ylabel("$d_{\\rm spec}$")
 ax2.set_xlim(0, 25)
-
+# %%
+fig.set_size_inches(5.52, 3.41)
+fig.savefig("../plots/out/watts_strogatz_2d.pdf", bbox_inches="tight")
+# %% [markdown]
+# ## 3D generalization
 # %%
 dimfile = "../data/dimension/watts_strogatz_3d_100.dat"
 data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
@@ -167,5 +177,9 @@ ax2.set_xlabel("$\\sigma$")
 ax2.set_ylabel("$d_{\\rm spec}$")
 ax2.set_xlim(0, 25)
 
+
+# %%
+fig.set_size_inches(5.52, 3.41)
+fig.savefig("../plots/out/watts_strogatz_3d.pdf", bbox_inches="tight")
 
 # %%

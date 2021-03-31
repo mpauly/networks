@@ -11,7 +11,6 @@ from matplotlib.collections import LineCollection
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 from scipy.signal import argrelextrema
 
-
 # %%
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
@@ -101,7 +100,7 @@ for sn in startnodes:
 
 # %%
 target_dimension = 3
-fig, ax = plt.subplots(3, figsize=(5, 12))
+fig, ax = plt.subplots(ncols=3, figsize=(11.04, 3.41))
 for ttype in range(3):
     mean_per_sigma = data[data["tratype"] == ttype + 1].groupby("sigma").mean()
     data_plot = np.array(
@@ -117,5 +116,8 @@ for ttype in range(3):
     ax[ttype].plot(mean_per_sigma.index, mean_per_sigma["dim"], c="tab:red")
     ax[ttype].axhline(target_dimension, color="tab:gray", ls="--")
 
+
+# %%
+fig.savefig("../plots/out/fly-drosophila-weighted.pdf", bbox_inches="tight")
 
 # %%

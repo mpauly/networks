@@ -123,3 +123,7 @@ plt.ylabel("$d_{\\rm spec}$")
 
 
 # %%
+fig.set_size_inches(5.52, 3.41)
+fig.savefig("../plots/out/internet_caida.pdf", bbox_inches="tight")
+
+# %%

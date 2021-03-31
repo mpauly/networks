@@ -21,4 +21,5 @@ for node in startnodes:
 
 plt.xlabel("$\\sigma$")
 plt.ylabel("$d_{\\rm spec}$")
-plt.savefig(pngfile)
+plt.show()
+# plt.savefig(pngfile)
