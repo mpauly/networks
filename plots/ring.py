@@ -12,7 +12,7 @@ dim_dir = "data/dimension/"
 
 dimfile = dim_dir + "ring_random.dat"
 
-reference_delta = 0.2
+reference_delta = 0.5
 reference_conn = 200
 
 lines = ["-", "--", "-.", ":"]
@@ -111,11 +111,14 @@ rand_conn, sigma, dim = np.loadtxt(dimfile, unpack=True)
 rand_conn_vals = np.unique(rand_conn)
 
 fig, ax1 = plt.subplots()
+linecycler = cycle(lines)
 
 for rc in rand_conn_vals:
     mask = rc == rand_conn
     these_sigmas = sigma[mask]
-    ax1.plot(these_sigmas, dim[mask], label="conns=${:0.0f}$".format(rc))
+    ax1.plot(
+        these_sigmas, dim[mask], label="conns=${:0.0f}$".format(rc), ls=next(linecycler)
+    )
 
 ax1.legend(loc="lower right")
 ax1.set_xlabel("$\\sigma$")
@@ -132,10 +135,12 @@ ax2.set_axes_locator(ip)
 # ax2.set_xlabel("$\\sigma$")
 # ax2.set_ylabel("$d_{\\rm spec}$")
 
+linecycler = cycle(lines)
+
 for rc in rand_conn_vals:
     mask = (rc == rand_conn) & (sigma < max_sigma_inset)
     these_sigmas = sigma[mask]
-    ax2.plot(these_sigmas, dim[mask])
+    ax2.plot(these_sigmas, dim[mask], ls=next(linecycler))
 
 fig = plt.gcf()
 fig.set_size_inches(5.52, 3.41)
