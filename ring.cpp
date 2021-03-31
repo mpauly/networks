@@ -70,8 +70,9 @@ int main(int argc, char *argv[]) {
 
     const int ring_length = 100;
 
-    Parameter_pair parameter_pairs[12] = {{200, 0.05}, {200, 0.35}, {200, 0.5}, {200, 0.65}, {200, 0.8},  {200, 0.95},
-                                          {200, 0.2},  {400, 0.2},  {600, 0.2}, {800, 0.2},  {1000, 0.2}, {2000, 0.2}};
+    Parameter_pair parameter_pairs[14] = {{200, 0.05}, {200, 0.35}, {200, 0.5}, {200, 0.65}, {200, 0.8},
+                                          {200, 0.95}, {0, 0.5},    {20, 0.5},  {40, 0.5},   {60, 0.5},
+                                          {80, 0.5},   {100, 0.5},  {250, 0.5}, {500, 0.5}};
 
     std::ofstream dimfile;
     dimfile.open(walker::DIMENSION_DIR + "ring_random.dat", std::ofstream::out);
