@@ -85,10 +85,11 @@ void generate_hyperbolic_disk() {
   edgefile.open("edges_hyperbolic.csv", std::ofstream::out);
 
   const int numberPoints = 1e6;
-  const double radius = 10.0;
+  const double average_degree = 3.0;
+  const double radius = 2.0 * log(8 * numberPoints / M_PI / average_degree);
   const double edge_cutoff = radius;
 
-  std::cout << "- Sprinkling" << std::endl;
+  std::cout << "- Sprinkling on a disk of radius " << radius << std::endl;
   std::vector<std::vector<double>> positions = sprinkle_hyperbolic(numberPoints, radius);
 
   for (int point = 0; point < numberPoints; point++) {
