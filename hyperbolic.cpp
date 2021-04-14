@@ -84,7 +84,7 @@ void generate_hyperbolic_disk() {
   std::ofstream edgefile;
   edgefile.open("edges_hyperbolic.csv", std::ofstream::out);
 
-  const int numberPoints = 1e3;
+  const int numberPoints = 1e6;
   const double radius = 10.0;
   const double edge_cutoff = radius;
 
