@@ -30,6 +30,8 @@ ax1.set_ylim(0, 15)
 line_segments = LineCollection(data_plot, alpha=0.2)
 ax1.add_collection(line_segments)
 
+plt.axhline(2, c="tab:green", ls="--")
+
 mean_per_sigma = data.groupby("sigma").mean()
 std_dev_per_sigma = data.groupby("sigma").agg(np.std, ddof=1)
 print(
