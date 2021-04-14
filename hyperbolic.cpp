@@ -85,7 +85,7 @@ void generate_hyperbolic_disk() {
   edgefile.open("edges_hyperbolic.csv", std::ofstream::out);
 
   const int numberPoints = 1e6;
-  const double average_degree = 3.0;
+  const double average_degree = 4.0;
   const double radius = 2.0 * log(8 * numberPoints / M_PI / average_degree);
   const double edge_cutoff = radius;
 
