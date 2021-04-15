@@ -28,7 +28,12 @@ diffusion_const_values = np.unique(diffusion_const)
 for nc in nr_conn_values:
     mask = (nc == nr_conn) & np.equal(diffusion_const, reference_delta)
     plt.plot(
-        sigma[mask], dim[mask], label="${:d}$".format(round(nc)), ls=next(linecycler)
+        sigma[mask],
+        dim[mask],
+        label="${:d}, \\bar{{k}} = {:1.1f}$".format(
+            round(nc), 2 * (round(nc) + 100) / 100
+        ),
+        ls=next(linecycler),
     )
 
 plt.legend()
