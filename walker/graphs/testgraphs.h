@@ -3,6 +3,8 @@
 #include "save_to_file.h"
 #include <fstream>
 #include <string>
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 #define INDEXAT2D(x, y, edge) ((x) * (edge) + y)
 #define INDEXAT3D(x, y, z, edge) ((x) * (edge) * (edge) + (y) * (edge) + z)
@@ -197,59 +199,61 @@ void make_ws_3d() {
   const int total_nodes = edge_length * edge_length * edge_length;
   const double radius_cutoff = 2.1;
   const int shift = ((int)radius_cutoff) + 1;
-  const double RewireProb = 0.001;
+  std::vector<double> rewiringProbs = {0.001, 0.005, 0.01, 0.05};
 
-  const double PI = 3.141592653589793;
-  TRnd Rnd = TInt::Rnd;
-  const int estimate_nr_edges = (int)(PI * radius_cutoff * radius_cutoff * radius_cutoff / 6.0) + shift;
-  std::cout << "== Making 3D Watts strogatz with edge length " << edge_length << std::endl;
-  std::cout << "  Edges per node estimated to be " << estimate_nr_edges << std::endl;
+  for (double RewireProb : rewiringProbs) {
+    TRnd Rnd = TInt::Rnd;
+    const int estimate_nr_edges = (int)(M_PI * radius_cutoff * radius_cutoff * radius_cutoff / 6.0) + shift;
+    std::cout << "== Making 3D Watts strogatz with edge length " << edge_length << std::endl;
+    std::cout << "  Edges per node estimated to be " << estimate_nr_edges << std::endl;
 
-  THashSet<TIntPr> EdgeSet(total_nodes * estimate_nr_edges);
+    THashSet<TIntPr> EdgeSet(total_nodes * estimate_nr_edges);
 
-  for (int node_x = 0; node_x < edge_length; node_x++) {
-    for (int node_y = 0; node_y < edge_length; node_y++) {
-      for (int node_z = 0; node_z < edge_length; node_z++) {
-        const int src_x = node_x;
-        const int src_y = node_y;
-        const int src_z = node_z;
-        const int src = INDEXAT3D(node_x, node_y, node_z, edge_length);
-        for (int shift_x = 0; shift_x <= shift; shift_x++) {
-          for (int shift_y = 0; shift_y <= shift; shift_y++) {
-            for (int shift_z = 0; shift_z <= shift; shift_z++) {
-              if (shift_x == 0 && shift_y == 0 && shift_z == 0)
-                continue;
-              // Euclidean distance for now
-              if (shift_x * shift_x + shift_y * shift_y + shift_z * shift_z < radius_cutoff * radius_cutoff) {
-                const int dst_x = (src_x + shift_x) % edge_length;
-                const int dst_y = (src_y + shift_y) % edge_length;
-                const int dst_z = (src_z + shift_z) % edge_length;
-                int dst = INDEXAT3D(dst_x, dst_y, dst_z, edge_length);
-                if (Rnd.GetUniDev() < RewireProb) { // random edge
-                  do {
-                    dst = Rnd.GetUniDevInt(total_nodes);
-                  } while (dst == src || EdgeSet.IsKey(TIntPr(src, dst)));
+    for (int node_x = 0; node_x < edge_length; node_x++) {
+      for (int node_y = 0; node_y < edge_length; node_y++) {
+        for (int node_z = 0; node_z < edge_length; node_z++) {
+          const int src_x = node_x;
+          const int src_y = node_y;
+          const int src_z = node_z;
+          const int src = INDEXAT3D(node_x, node_y, node_z, edge_length);
+          for (int shift_x = 0; shift_x <= shift; shift_x++) {
+            for (int shift_y = 0; shift_y <= shift; shift_y++) {
+              for (int shift_z = 0; shift_z <= shift; shift_z++) {
+                if (shift_x == 0 && shift_y == 0 && shift_z == 0)
+                  continue;
+                // Euclidean distance for now
+                if (shift_x * shift_x + shift_y * shift_y + shift_z * shift_z < radius_cutoff * radius_cutoff) {
+                  const int dst_x = (src_x + shift_x) % edge_length;
+                  const int dst_y = (src_y + shift_y) % edge_length;
+                  const int dst_z = (src_z + shift_z) % edge_length;
+                  int dst = INDEXAT3D(dst_x, dst_y, dst_z, edge_length);
+                  if (Rnd.GetUniDev() < RewireProb) { // random edge
+                    do {
+                      dst = Rnd.GetUniDevInt(total_nodes);
+                    } while (dst == src || EdgeSet.IsKey(TIntPr(src, dst)));
+                  }
+                  EdgeSet.AddKey(TIntPr(src, dst));
                 }
-                EdgeSet.AddKey(TIntPr(src, dst));
               }
             }
           }
         }
       }
     }
-  }
 
-  PUNGraph GraphPt = TUNGraph::New();
-  TUNGraph &Graph = *GraphPt;
-  Graph.Reserve(total_nodes, EdgeSet.Len());
-  int node;
-  for (node = 0; node < total_nodes; node++) {
-    IAssert(Graph.AddNode(node) == node);
-  }
-  for (int edge = 0; edge < EdgeSet.Len(); edge++) {
-    Graph.AddEdge(EdgeSet[edge].Val1, EdgeSet[edge].Val2);
-  }
-  Graph.Defrag();
+    PUNGraph GraphPt = TUNGraph::New();
+    TUNGraph &Graph = *GraphPt;
+    Graph.Reserve(total_nodes, EdgeSet.Len());
+    int node;
+    for (node = 0; node < total_nodes; node++) {
+      IAssert(Graph.AddNode(node) == node);
+    }
+    for (int edge = 0; edge < EdgeSet.Len(); edge++) {
+      Graph.AddEdge(EdgeSet[edge].Val1, EdgeSet[edge].Val2);
+    }
+    Graph.Defrag();
 
-  save_graph_to_file(GraphPt, walker::GRAPH_DIR + "watts_strogatz_3d_" + to_string(edge_length) + ".dat");
+    save_graph_to_file(GraphPt, walker::GRAPH_DIR + "watts_strogatz_3d_" + to_string(edge_length) + "_" +
+                                    to_string(RewireProb) + ".dat");
+  }
 }
