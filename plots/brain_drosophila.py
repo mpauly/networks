@@ -1,77 +1,67 @@
+# %%
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+from matplotlib.collections import LineCollection
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 from scipy.signal import argrelextrema
+from trajectory_classification import Trajectories
 
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
 
-dimfile = "data/dimension/fly-drosophila-large.dat"
-outfile = "plots/out/drosophila_large.pdf"
+
+# %%
+dimfile = "../data/dimension/fly-drosophila-large.dat"
+outfile = "../plots/out/drosophila_large.pdf"
 
 target_dimension = 3
 hist_scale = 30
 
-print("Reading file {} and writing plot to {}".format(dimfile, outfile))
+# %%
 # 1D chain plot
-data = np.loadtxt(dimfile)
-startnode, sigma, dim = data.T
-startnodes = np.unique(startnode)
+data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
+# %%
+startnodes = pd.unique(data["start_node"])
+maxsigma = data["sigma"].max()
+data["min"] = data.iloc[argrelextrema(data.dim.values, np.less_equal)[0]]["dim"]
+data["max"] = data.iloc[argrelextrema(data.dim.values, np.greater_equal)[0]]["dim"]
+data["tratype"] = 0
+# %%
+data.loc[data["sigma"] == 1, "min"] = np.nan
+data.loc[data["sigma"] == 1, "max"] = np.nan
+data.loc[data["sigma"] == maxsigma, "min"] = np.nan
+data.loc[data["sigma"] == maxsigma, "max"] = np.nan
 
-local_min_walkers = []
-other_walks = []
-late_max_walkers = []
-
-# Sort data into types of trajectories
-for node in startnodes:
-    mask = (node == startnode) & (~np.isnan(dim))
-    local_mins = argrelextrema(dim[mask], np.less)[0]
-    global_max = np.argmax(dim[mask])
-
-    walk = {"start_node": node, "sigma": sigma[mask], "dim": dim[mask]}
-
-    has_local_min = local_mins.size > 0 and 10 < local_mins[0] < 50
-    if has_local_min and local_mins[0] > global_max:
-        local_min_walkers.append(walk)
-    elif has_local_min:
-        late_max_walkers.append(walk)
-    else:
-        other_walks.append(walk)
-
-print("Total walker count:")
-for walk_set, title in zip(
-    [other_walks, late_max_walkers, local_min_walkers],
-    [
-        "Other walks",
-        "Walks with a late maximum",
-        "Walks without local minimum and early maximum",
-    ],
-):
-    print("  Walk {}  -  {} walkers".format(title, len(walk_set)))
-    print("   Example start node: {}".format(walk_set[-1]["start_node"]))
-
-# plot different types
+# %% [markdown]
+# Here we are classifying all trajectories into different types
+# %%
+for sn in startnodes:
+    traj = data[data["start_node"] == sn]
+    maxima = traj[traj["max"].notnull()]
+    data.loc[data["start_node"] == sn, "tratype"] = Trajectories.classify(maxima)
+# %%
+data["tratype"].value_counts()
+# %%
 fig, ax1 = plt.subplots()
 
-for walk_set, color in zip(
-    [other_walks, late_max_walkers, local_min_walkers],
-    ["tab:green", "tab:orange", "tab:blue"],
-):
-    for walker in walk_set:
-        ax1.plot(walker["sigma"], walker["dim"], alpha=0.2, c=color)
+for walk_type, col in Trajectories.iter():
+    data_plot = np.array(
+        list(
+            data[data["tratype"] == walk_type]
+            .groupby("start_node")
+            .apply(pd.DataFrame.to_numpy)
+        )
+    )
+    data_plot = data_plot[:, :, 1:3]
+    line_segments = LineCollection(data_plot, alpha=0.2, color=col["color"])
+    ax1.add_collection(line_segments)
 
-for walk_set, color in zip(
-    [other_walks, late_max_walkers, local_min_walkers],
-    ["tab:brown", "tab:purple", "tab:red"],
-):
-    sigmas = np.mean(np.array([w["sigma"] for w in walk_set]), axis=0)
-    means = np.mean(np.array([w["dim"] for w in walk_set]), axis=0)
-    ax1.plot(sigmas, means, c=color)
+    mean_per_sigma = data[data["tratype"] == walk_type].groupby("sigma").mean()
+    ax1.plot(mean_per_sigma.index, mean_per_sigma["dim"], c=col["mean_color"])
 
-plt.axhline(target_dimension, c="tab:gray", ls="--")
-
-plt.xlim([np.min(sigma), np.max(sigma)])
+plt.axhline(3, c="tab:gray", ls="--")
 plt.ylim(0.0, 15.0)
 
 plt.xlabel("$\\sigma$")
@@ -84,18 +74,19 @@ ax2.set_axes_locator(ip)
 ax2.set_xlabel("$d_{{\\rm spec}}(\\sigma = {})$".format(hist_scale))
 ax2.set_ylabel("$n$")
 
-all_dims = []
+all_dims = [
+    data[(data["tratype"] == walk_type) & (data["sigma"] == 30)]["dim"].values
+    for walk_type, c in Trajectories.iter()
+]
+ax2.hist(all_dims, color=[c["color"] for walk_type, c in Trajectories.iter()])
 
-for walk_set in [other_walks, late_max_walkers, local_min_walkers]:
-    ref_dimensions = np.array(
-        [walker["dim"][walker["sigma"] == hist_scale][0] for walker in walk_set]
-    ).flatten()
-    all_dims.append(ref_dimensions)
-
-ax2.hist(all_dims, color=["tab:green", "tab:orange", "tab:blue"])
 ax2.axvline(target_dimension, color="tab:gray", ls="--")
 ax2.set_ylim([0, 100])
 
 fig = plt.gcf()
+
+# %%
 fig.set_size_inches(5.52, 3.41)
 fig.savefig(outfile, bbox_inches="tight")
+
+# %%

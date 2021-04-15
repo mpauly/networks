@@ -36,4 +36,5 @@
 .vscode/*
 # dont add mathematica files
 *.nb
+plots/__pycache__/**
 copy_plots.sh
