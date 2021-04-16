@@ -11,6 +11,8 @@ from matplotlib.collections import LineCollection
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 from scipy.signal import argrelextrema
 
+from trajectory_classification import Trajectories
+
 # %%
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
@@ -86,16 +88,7 @@ data["tratype"] = 0
 for sn in startnodes:
     traj = data[data["start_node"] == sn]
     maxima = traj[traj["max"].notnull()]
-    # trajectory has less then two maxima
-    if maxima.shape[0] < 2:
-        data.loc[data["start_node"] == sn, "tratype"] = 3
-        continue
-    # first maximum is higher than second maximum
-    if maxima.iloc[0]["dim"] > maxima.iloc[1]["dim"]:
-        data.loc[data["start_node"] == sn, "tratype"] = 1
-    # second is higher than first
-    if maxima.iloc[0]["dim"] < maxima.iloc[1]["dim"]:
-        data.loc[data["start_node"] == sn, "tratype"] = 2
+    data.loc[data["start_node"] == sn, "tratype"] = Trajectories.classify(maxima)
 
 
 # %%
@@ -118,6 +111,33 @@ for ttype in range(3):
 
 
 # %%
+plt.clf()
+fig = plt.gcf()
+ax1 = plt.gca()
+
+for walk_type, col in Trajectories.iter():
+    data_plot = np.array(
+        list(
+            data[data["tratype"] == walk_type]
+            .groupby("start_node")
+            .apply(pd.DataFrame.to_numpy)
+        )
+    )
+    data_plot = data_plot[:, :, 1:3]
+    line_segments = LineCollection(data_plot, alpha=0.2, color=col["color"])
+    ax1.add_collection(line_segments)
+
+    mean_per_sigma = data[data["tratype"] == walk_type].groupby("sigma").mean()
+    ax1.plot(mean_per_sigma.index, mean_per_sigma["dim"], c=col["mean_color"])
+
+plt.axhline(3, c="tab:gray", ls="--")
+plt.ylim(0.0, 15.0)
+
+plt.xlabel("$\\sigma$")
+plt.ylabel("$d_{\\rm spec}$")
+
+# %%
+fig.set_size_inches(5.52, 3.41)
 fig.savefig("../plots/out/fly-drosophila-weighted.pdf", bbox_inches="tight")
 
 # %%
