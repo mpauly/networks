@@ -235,46 +235,42 @@ void average_shortest_path() {
   outfile.open("data/average_path.tsv", std::ofstream::out);
 
   const std::vector<int> numberPointSet = {500, 1000, 5000, 10000, 50000, 100000};
-  const int nr_of_sets = 10;
 
   for (int numberPoints : numberPointSet) {
     std::cout << "- Nr. of points: " << numberPoints << std::endl;
 
+    PUNGraph Graph = TUNGraph::New();
+    std::vector<std::vector<double>> positions = sprinkle_minkowski(numberPoints);
+
+    for (int point = 0; point < numberPoints; point++) {
+      IAssert(Graph->AddNode(point) == point);
+    }
+    std::function<void(int, int)> add_edge = [&Graph, &positions](int i, int j) { Graph->AddEdge(i, j); };
+    int nr_of_edges = construct_flat_edges(positions, add_edge);
+    Graph->Defrag();
+
+    std::cout << "Computing distances" << std::endl;
+    double average_distance = 0;
+    int nr_of_paths = 0;
+    const int ten_percent = numberPoints / 10;
+
 #pragma omp parallel for
-    for (int set = 0; set < nr_of_sets; set++) {
-      PUNGraph Graph = TUNGraph::New();
-      std::vector<std::vector<double>> positions = sprinkle_minkowski(numberPoints);
-
-      for (int point = 0; point < numberPoints; point++) {
-        IAssert(Graph->AddNode(point) == point);
+    for (int i = 1; i < numberPoints; i++) {
+      if (i % ten_percent == 0) {
+        std::cout << "  " << i * 100 / numberPoints << "% done" << std::endl;
       }
-      std::function<void(int, int)> add_edge = [&Graph, &positions](int i, int j) { Graph->AddEdge(i, j); };
-      int nr_of_edges = construct_flat_edges(positions, add_edge);
-      Graph->Defrag();
-
-      std::cout << "Computing distances" << std::endl;
-      double average_distance = 0;
-      int nr_of_paths = 0;
-      const int nr_of_paths_expected = (numberPoints * numberPoints - numberPoints) / 2;
-      const int ten_percent = nr_of_paths_expected / 10;
-      for (int i = 1; i < numberPoints; i++) {
-        // we do this per point in order to avoid problems with averages of small/large numbers
-        std::vector<double> distances(i, 0.0);
-        for (int j = 0; j < i; j++) {
-          nr_of_paths++;
-          if (i % ten_percent == 0) {
-            std::cout << "  " << i * 100 / numberPoints << "% done" << std::endl;
-          }
-          distances[j] = TSnap::GetShortPath(Graph, i, j);
-        }
-        average_distance += std::accumulate(distances.begin(), distances.end(), 0.0) / i;
+      // we do this per point in order to avoid problems with averages of small/large numbers
+      std::vector<int> distances(i);
+      for (int j = 0; j < i; j++) {
+        nr_of_paths++;
+        distances[j] = TSnap::GetShortPath(Graph, i, j);
       }
 #pragma omp critical
-      {
-        std::cout << "  Finished set with " << nr_of_paths << " distances computed" << std::endl;
-        outfile << numberPoints << "\t" << set << "\t" << average_distance << std::endl;
-      }
+      { average_distance += std::accumulate(distances.begin(), distances.end(), 0.0) / i; }
     }
+
+    std::cout << "  Finished set with " << nr_of_paths << " distances computed" << std::endl;
+    outfile << numberPoints << "\t" << average_distance << std::endl;
   }
 }
 
