@@ -37,7 +37,7 @@ for nc in nr_conn_values:
     )
 
 plt.legend()
-plt.title("$\\delta = {}$, varying number of connections".format(reference_delta))
+# plt.title("$\\delta = {}$, varying number of connections".format(reference_delta))
 plt.xlabel("$\\sigma$")
 plt.ylabel("$d_{\\rm spec}$")
 plt.xlim(0, 200)

@@ -1,12 +1,15 @@
 # %% [markdown]
 # ## Watts Strogatz
 # %%
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.collections import LineCollection
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
+matplotlib.rcParams["mathtext.fontset"] = "stix"
+matplotlib.rcParams["font.family"] = "STIXGeneral"
 # %%
 dimfile = "../data/dimension/watts_strogatz.dat"
 data = pd.read_table(dimfile)
@@ -60,7 +63,7 @@ for ind, degree in enumerate([2, 4, 6]):
     ax[ind].set_xlim(0, 200)
     ax[ind].set_xlabel("$\\sigma$")
     ax[ind].set_ylabel("$d_{\\rm spec}$")
-    ax[ind].set_title("$\\delta={}, D={}$".format(ref_delta, degree))
+    ax[ind].set_title("$D={}$".format(degree))
 
 # %%
 fig.set_size_inches(11.04, 3.41)
@@ -125,7 +128,7 @@ fig.savefig("../plots/out/watts_strogatz_2d.pdf", bbox_inches="tight")
 # %% [markdown]
 # ## 3D generalization
 # %%
-dimfile = "../data/dimension/watts_strogatz_3d_100.dat"
+dimfile = "../data/dimension/watts_strogatz_3d_100_0.001000.dat"
 data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
 data_plot = np.array(list(data.groupby("start_node").apply(pd.DataFrame.to_numpy)))
 data_plot = data_plot[:, :, 1:]
@@ -181,5 +184,26 @@ ax2.set_xlim(0, 25)
 # %%
 fig.set_size_inches(5.52, 3.41)
 fig.savefig("../plots/out/watts_strogatz_3d.pdf", bbox_inches="tight")
+
+#%%
+
+plt.clf()
+
+# %%
+fig = plt.gcf()
+for beta in ['0.001', '0.005', '0.010', '0.050']:
+    dimfile = "../data/dimension/watts_strogatz_3d_100_{}000.dat".format(beta)
+    data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
+    mean_per_sigma = data.groupby("sigma").mean()
+    mean_per_sigma["dim"].plot(label="$\\beta={}$".format(beta))
+
+plt.legend()
+plt.xlabel("$\\sigma$")
+plt.ylabel("$d_{\\rm spec}$")
+
+plt.axhline(3.0, c='tab:gray', ls="--")
+# %%
+fig.set_size_inches(5.52, 3.41)
+fig.savefig("../plots/out/watts_strogatz_3d_var_beta.pdf", bbox_inches="tight")
 
 # %%
