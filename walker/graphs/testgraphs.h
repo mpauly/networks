@@ -203,6 +203,7 @@ void make_ws_3d() {
 
   for (double RewireProb : rewiringProbs) {
     TRnd Rnd = TInt::Rnd;
+    // the following is just a rough upper bound on the number of edges
     const int estimate_nr_edges = (int)(M_PI * radius_cutoff * radius_cutoff * radius_cutoff / 6.0) + shift;
     std::cout << "== Making 3D Watts strogatz with edge length " << edge_length << std::endl;
     std::cout << "  Edges per node estimated to be " << estimate_nr_edges << std::endl;
