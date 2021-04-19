@@ -254,7 +254,6 @@ void average_shortest_path() {
     int nr_of_paths = 0;
     const int ten_percent = numberPoints / 10;
 
-#pragma omp parallel for
     for (int i = 1; i < numberPoints; i++) {
       if (i % ten_percent == 0) {
         std::cout << "  " << i * 100 / numberPoints << "% done" << std::endl;
@@ -265,8 +264,8 @@ void average_shortest_path() {
         nr_of_paths++;
         distances[j] = TSnap::GetShortPath(Graph, i, j);
       }
-#pragma omp critical
-      { average_distance += std::accumulate(distances.begin(), distances.end(), 0.0) / i; }
+
+      average_distance += std::accumulate(distances.begin(), distances.end(), 0.0) / i;
     }
 
     std::cout << "  Finished set with " << nr_of_paths << " distances computed" << std::endl;
