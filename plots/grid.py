@@ -1,5 +1,9 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+
+matplotlib.rcParams["mathtext.fontset"] = "stix"
+matplotlib.rcParams["font.family"] = "STIXGeneral"
 
 dimfile = "data/dimension/dim_grid.dat"
 

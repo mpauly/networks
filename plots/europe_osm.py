@@ -1,6 +1,10 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
+
+matplotlib.rcParams["mathtext.fontset"] = "stix"
+matplotlib.rcParams["font.family"] = "STIXGeneral"
 
 dimfile = "data/dimension/europe_osm_reduced.dat"
 outfile = "plots/out/europe_osm.pdf"

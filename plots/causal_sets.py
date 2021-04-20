@@ -11,7 +11,19 @@ from scipy.signal import argrelextrema
 matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
 
-
+# %%
+data = pd.read_table("../data/average_path.tsv")
+data["stderr_spl"] = data["stddev_spl"] / np.sqrt(0.1 * data["nodes"])
+thisplot = data.plot.scatter(
+    "nodes", "avg_spl", yerr="stderr_spl", figsize=(5.52, 3.41)
+)
+plt.xlabel("Nr. of nodes")
+plt.ylabel("Mean shortest path length")
+plt.semilogx()
+# %%
+fig = thisplot.get_figure()
+fig.set_size_inches(5.52, 3.41)
+fig.savefig("../plots/out/causal_set_avg_spl.pdf", bbox_inches="tight")
 # %%
 dimfile = "../data/dimension/causal_set_l30.dat"
 

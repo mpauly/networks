@@ -6,6 +6,8 @@ import pandas as pd
 from matplotlib.collections import LineCollection
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 
+matplotlib.rcParams["mathtext.fontset"] = "stix"
+matplotlib.rcParams["font.family"] = "STIXGeneral"
 # %% [markdown]
 # ## Human Brain vs Grid
 # Below we compare the spectral dimension of a 3D grid

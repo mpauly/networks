@@ -6,8 +6,11 @@ import pandas as pd
 from matplotlib.collections import LineCollection
 from mpl_toolkits.axes_grid1.inset_locator import InsetPosition
 from scipy.signal import argrelextrema
+
 from trajectory_classification import Trajectories
 
+matplotlib.rcParams["mathtext.fontset"] = "stix"
+matplotlib.rcParams["font.family"] = "STIXGeneral"
 # %% [markdown]
 # ## Voxel rat brain
 # Spectral dimension for a brain graph of a rat.
