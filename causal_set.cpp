@@ -233,10 +233,17 @@ void generate_anti_desitter() { generate_hyperbolic(true); }
 void average_shortest_path() {
   std::ofstream outfile;
   outfile.open("data/average_path.tsv", std::ofstream::out);
+  outfile << "nodes\t"
+          << "eff_diam\t"
+          << "full_diam\t"
+          << "avg_spl\t"
+          << "stddev_spl" << std::endl;
 
-  const std::vector<int> numberPointSet = {500, 1000, 5000, 10000, 50000, 100000};
+  const std::vector<int> numberPointSet = {500,   750,   1000,  1500,  2000,  3000,  4000,  5000,  7500,
+                                           10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000};
 
   for (int numberPoints : numberPointSet) {
+    const int test_nodes = (int)(numberPoints / 10);
     std::cout << "- Nr. of points: " << numberPoints << std::endl;
 
     PUNGraph Graph = TUNGraph::New();
@@ -250,26 +257,15 @@ void average_shortest_path() {
     Graph->Defrag();
 
     std::cout << "Computing distances" << std::endl;
-    double average_distance = 0;
-    int nr_of_paths = 0;
-    const int ten_percent = numberPoints / 10;
 
-    for (int i = 1; i < numberPoints; i++) {
-      if (i % ten_percent == 0) {
-        std::cout << "  " << i * 100 / numberPoints << "% done" << std::endl;
-      }
-      // we do this per point in order to avoid problems with averages of small/large numbers
-      std::vector<int> distances(i);
-      for (int j = 0; j < i; j++) {
-        nr_of_paths++;
-        distances[j] = TSnap::GetShortPath(Graph, i, j);
-      }
+    double eff_diam, avg_spl, stddev_spl;
+    int full_diam;
 
-      average_distance += std::accumulate(distances.begin(), distances.end(), 0.0) / i;
-    }
+    TSnap::GetBfsEffDiam(Graph, test_nodes, false, eff_diam, full_diam, avg_spl, stddev_spl);
 
-    std::cout << "  Finished set with " << nr_of_paths << " distances computed" << std::endl;
-    outfile << numberPoints << "\t" << average_distance << std::endl;
+    std::cout << "  Finished set " << std::endl;
+    outfile << numberPoints << "\t" << eff_diam << "\t" << full_diam << "\t" << avg_spl << "\t" << stddev_spl
+            << std::endl;
   }
 }
 
