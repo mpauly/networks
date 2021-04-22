@@ -107,9 +107,53 @@ void generate_hyperbolic_disk() {
   save_graph_to_file(Graph, walker::GRAPH_DIR + "hyperbolic_disk.dat");
 }
 
+// network cosmology
+void generate_growing_disk() {
+  PUNGraph Graph = TUNGraph::New();
+  std::ofstream nodefile;
+  nodefile.open("nodes_hyperbolic.csv", std::ofstream::out);
+  std::ofstream edgefile;
+  edgefile.open("edges_hyperbolic.csv", std::ofstream::out);
+
+  const int numberPoints = 1e6;
+  const double r_cutoff = 3.0;
+  const double r_cutoff_cosh = cosh(r_cutoff);
+
+  int nr_of_edges = 0;
+
+  std::default_random_engine generator;
+  std::uniform_real_distribution<double> uni_dist(0.0, 1.0);
+
+  std::vector<std::vector<double>> positions(numberPoints, {0.0, 0.0});
+  const int ten_percent = numberPoints / 10;
+
+  for (int point = 0; point < numberPoints; point++) {
+    if (point % ten_percent == 0) {
+      std::cout << point * 100 / numberPoints << "% done" << std::endl;
+    }
+    positions[point][0] = log(point);
+    positions[point][1] = 2.0 * M_PI * uni_dist(generator);
+    IAssert(Graph->AddNode(point) == point);
+    nodefile << point << "\t" << positions[point][0] << "\t" << positions[point][1] << "\n";
+
+    for (int j = 0; j < point; j++) {
+      if (hyperbolic_distance(positions[point], positions[j]) < r_cutoff_cosh) {
+        Graph->AddEdge(point, j);
+        edgefile << positions[point][0] << "\t" << positions[point][1] << "\t" << positions[j][0] << "\t"
+                 << positions[j][1] << "\n";
+        nr_of_edges++;
+      }
+    }
+  }
+  Graph->Defrag();
+  std::cout << "- Writing graph with " << nr_of_edges << " edges" << std::endl;
+  save_graph_to_file(Graph, walker::GRAPH_DIR + "growing_disk.dat");
+}
+
 int main(int argc, char *argv[]) {
   std::map<std::string, std::function<void()>> known_functions = {
       {"hyperbolic_disk", generate_hyperbolic_disk},
+      {"growing_disk", generate_growing_disk},
   };
 
   int count = 0;
