@@ -12,7 +12,7 @@ matplotlib.rcParams["mathtext.fontset"] = "stix"
 matplotlib.rcParams["font.family"] = "STIXGeneral"
 
 # %%
-data = pd.read_table("../data/average_path.tsv")
+data = pd.read_table("../data/other/average_path.tsv")
 data["stderr_spl"] = data["stddev_spl"] / np.sqrt(0.1 * data["nodes"])
 thisplot = data.plot.scatter(
     "nodes", "avg_spl", yerr="stderr_spl", figsize=(5.52, 3.41)

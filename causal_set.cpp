@@ -232,7 +232,7 @@ void generate_anti_desitter() { generate_hyperbolic(true); }
 
 void average_shortest_path() {
   std::ofstream outfile;
-  outfile.open("data/average_path.tsv", std::ofstream::out);
+  outfile.open(walker::OTHER_DIR + "/average_path.tsv", std::ofstream::out);
   outfile << "nodes\t"
           << "eff_diam\t"
           << "full_diam\t"
