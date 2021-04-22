@@ -151,11 +151,11 @@ void generate_minkowski() {
   PUNGraph GraphCutoff1 = TUNGraph::New();
   PUNGraph GraphCutoff2 = TUNGraph::New();
   std::ofstream nodefile;
-  nodefile.open("nodes.csv", std::ofstream::out);
+  nodefile.open(walker::OTHER_DIR + "nodes_cs_minkowski.csv", std::ofstream::out);
   std::ofstream edgefile;
-  edgefile.open("edges.csv", std::ofstream::out);
+  edgefile.open(walker::OTHER_DIR + "edges_cs_minkowski.csv", std::ofstream::out);
 
-  const int numberPoints = 1e6;
+  const int numberPoints = 625;
   const double euclidean_cutoff1 = 30. / sqrt(numberPoints);
   const double euclidean_cutoff2 = 100. / sqrt(numberPoints);
 
