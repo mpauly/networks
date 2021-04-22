@@ -119,8 +119,6 @@ void generate_growing_disk() {
   const double r_cutoff = 3.0;
   const double r_cutoff_cosh = cosh(r_cutoff);
 
-  int nr_of_edges = 0;
-
   std::default_random_engine generator;
   std::uniform_real_distribution<double> uni_dist(0.0, 1.0);
 
@@ -141,12 +139,13 @@ void generate_growing_disk() {
         Graph->AddEdge(point, j);
         edgefile << positions[point][0] << "\t" << positions[point][1] << "\t" << positions[j][0] << "\t"
                  << positions[j][1] << "\n";
-        nr_of_edges++;
       }
     }
   }
   Graph->Defrag();
-  std::cout << "- Writing graph with " << nr_of_edges << " edges" << std::endl;
+  Graph = TSnap::GetMxWcc(Graph);
+  std::cout << "- Writing graph with " << Graph->GetNodes() << " nodes and " << Graph->GetEdges() << " edges"
+            << std::endl;
   save_graph_to_file(Graph, walker::GRAPH_DIR + "growing_disk.dat");
 }
 
