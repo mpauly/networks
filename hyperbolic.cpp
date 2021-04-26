@@ -116,8 +116,6 @@ void generate_growing_disk() {
   edgefile.open("edges_hyperbolic.csv", std::ofstream::out);
 
   const int numberPoints = 1e6;
-  const double r_cutoff = 3.0;
-  const double r_cutoff_cosh = cosh(r_cutoff);
 
   std::default_random_engine generator;
   std::uniform_real_distribution<double> uni_dist(0.0, 1.0);
@@ -135,7 +133,7 @@ void generate_growing_disk() {
     nodefile << point << "\t" << positions[point][0] << "\t" << positions[point][1] << "\n";
 
     for (int j = 0; j < point; j++) {
-      if (hyperbolic_distance(positions[point], positions[j]) < r_cutoff_cosh) {
+      if (hyperbolic_distance(positions[point], positions[j]) < cosh(positions[point][0])) {
         Graph->AddEdge(point, j);
         edgefile << positions[point][0] << "\t" << positions[point][1] << "\t" << positions[j][0] << "\t"
                  << positions[j][1] << "\n";
