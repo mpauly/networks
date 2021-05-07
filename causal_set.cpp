@@ -311,6 +311,10 @@ void generate_transitive_percolations_for_beta(const double probability_p) {
 }
 
 void generate_transitive_percolations() {
+  generate_transitive_percolations_for_beta(0.000001);
+  generate_transitive_percolations_for_beta(0.000005);
+  generate_transitive_percolations_for_beta(0.00001);
+  generate_transitive_percolations_for_beta(0.00005);
   generate_transitive_percolations_for_beta(0.0001);
   generate_transitive_percolations_for_beta(0.0005);
   generate_transitive_percolations_for_beta(0.001);
