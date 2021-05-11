@@ -286,15 +286,12 @@ void generate_transitive_percolations_for_beta(const double probability_p) {
   while (new_node < numberPoints) {
     // determine edge candidates
     edge_candidates.clear();
-    // std::cout << new_node << " candidates ";
     for (int i = 0; i < new_node; i++) {
       if (uni_dist(generator) < probability_p) {
         edge_candidates.push_back(i);
-        // std::cout << i << " ";
       }
     }
     if (edge_candidates.size() == 0) {
-      // std::cout << std::endl;
       continue;
     }
 
@@ -311,17 +308,14 @@ void generate_transitive_percolations_for_beta(const double probability_p) {
       int predecessor = *rit;
       // only add the edge if there is not already a transitive path to that edge
       if (nodes_visited.IsKey(predecessor)) {
-        // std::cout << " n" << predecessor << "d" << nodes_visited.GetDat(predecessor) << std::endl;
         continue;
       }
-      // std::cout << " a" << predecessor;
       // edges point towards the origin
       Graph->AddEdge(new_node, predecessor);
       // explore all nodes in the past
       TSnap::GetShortPath(Graph, new_node, nodes_visited, true);
       nr_of_edges++;
     }
-    // std::cout << std::endl;
     new_node++;
   }
 
@@ -329,7 +323,7 @@ void generate_transitive_percolations_for_beta(const double probability_p) {
   TSnap::MakeUnDir(Graph);
   Graph->Defrag();
   std::cout << "- Writing graph with " << nr_of_edges << " edges" << std::endl;
-  // save_graph_to_file(Graph, walker::GRAPH_DIR + "transitive_percolations_" + std::to_string(probability_p) + ".dat");
+  save_graph_to_file(Graph, walker::GRAPH_DIR + "transitive_percolations_" + std::to_string(probability_p) + ".dat");
 }
 
 void generate_transitive_percolations() {
