@@ -275,7 +275,7 @@ void generate_transitive_percolations_for_beta(const double probability_p) {
   std::default_random_engine generator;
   std::uniform_real_distribution<double> uni_dist(0.0, 1.0);
 
-  const int numberPoints = 1e2;
+  const int numberPoints = 1e5;
   const int ten_percent = numberPoints / 10;
   std::vector<int> edge_candidates;
   edge_candidates.reserve((int)numberPoints * probability_p * 1.1);
