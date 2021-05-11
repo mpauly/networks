@@ -270,44 +270,66 @@ void average_shortest_path() {
 }
 
 void generate_transitive_percolations_for_beta(const double probability_p) {
-  PUNGraph Graph = TUNGraph::New();
+  // work with a directed graph here
+  PNGraph Graph = TNGraph::New();
   std::default_random_engine generator;
   std::uniform_real_distribution<double> uni_dist(0.0, 1.0);
 
-  const int numberPoints = 1e5;
+  const int numberPoints = 1e2;
   const int ten_percent = numberPoints / 10;
   std::vector<int> edge_candidates;
   edge_candidates.reserve((int)numberPoints * probability_p * 1.1);
 
   Graph->AddNode(0);
-  int nr_of_points = 1, nr_of_edges = 0;
+  int new_node = 1, nr_of_edges = 0;
 
-  while (nr_of_points < numberPoints) {
+  while (new_node < numberPoints) {
     // determine edge candidates
     edge_candidates.clear();
-    for (int i = 0; i < nr_of_points; i++) {
+    // std::cout << new_node << " candidates ";
+    for (int i = 0; i < new_node; i++) {
       if (uni_dist(generator) < probability_p) {
         edge_candidates.push_back(i);
+        // std::cout << i << " ";
       }
     }
-    if (edge_candidates.size() == 0)
+    if (edge_candidates.size() == 0) {
+      // std::cout << std::endl;
       continue;
-
-    if (nr_of_points % ten_percent == 0) {
-      std::cout << nr_of_points * 100 / numberPoints << "%" << std::endl;
     }
 
-    Graph->AddNode(nr_of_points);
-    for (int predecessor : edge_candidates) {
-      Graph->AddEdge(predecessor, nr_of_points);
+    if (new_node % ten_percent == 0) {
+      std::cout << new_node * 100 / numberPoints << "%" << std::endl;
+    }
+
+    Graph->AddNode(new_node);
+    TIntH nodes_visited;
+    TSnap::GetShortPath(Graph, new_node, nodes_visited, true);
+    // iterate over candidates in reverse order - we go back in growing time
+    // i.e. we first check the "closest" nodes
+    for (std::vector<int>::reverse_iterator rit = edge_candidates.rbegin(); rit != edge_candidates.rend(); ++rit) {
+      int predecessor = *rit;
+      // only add the edge if there is not already a transitive path to that edge
+      if (nodes_visited.IsKey(predecessor)) {
+        // std::cout << " n" << predecessor << "d" << nodes_visited.GetDat(predecessor) << std::endl;
+        continue;
+      }
+      // std::cout << " a" << predecessor;
+      // edges point towards the origin
+      Graph->AddEdge(new_node, predecessor);
+      // explore all nodes in the past
+      TSnap::GetShortPath(Graph, new_node, nodes_visited, true);
       nr_of_edges++;
     }
-    nr_of_points++;
+    // std::cout << std::endl;
+    new_node++;
   }
 
+  // Make undirected
+  TSnap::MakeUnDir(Graph);
   Graph->Defrag();
   std::cout << "- Writing graph with " << nr_of_edges << " edges" << std::endl;
-  save_graph_to_file(Graph, walker::GRAPH_DIR + "transitive_percolations_" + std::to_string(probability_p) + ".dat");
+  // save_graph_to_file(Graph, walker::GRAPH_DIR + "transitive_percolations_" + std::to_string(probability_p) + ".dat");
 }
 
 void generate_transitive_percolations() {
