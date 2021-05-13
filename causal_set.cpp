@@ -320,10 +320,22 @@ void generate_transitive_percolations_for_beta(const double probability_p) {
   }
 
   // Make undirected
-  TSnap::MakeUnDir(Graph);
-  Graph->Defrag();
+  PUNGraph GraphUndirected = TUNGraph::New();
+  GraphUndirected->Reserve(numberPoints, nr_of_edges);
+  for (int i = 0; i < numberPoints; i++) {
+    GraphUndirected->AddNode(i);
+  }
+  for (auto EI = Graph->BegEI(); EI < Graph->EndEI(); EI++) {
+    const int SrcNId = EI.GetSrcNId();
+    const int DstNId = EI.GetDstNId();
+    if (!GraphUndirected->IsEdge(DstNId, SrcNId)) {
+      GraphUndirected->AddEdge(DstNId, SrcNId);
+    }
+  }
+  GraphUndirected->Defrag();
   std::cout << "- Writing graph with " << nr_of_edges << " edges" << std::endl;
-  save_graph_to_file(Graph, walker::GRAPH_DIR + "transitive_percolations_" + std::to_string(probability_p) + ".dat");
+  save_graph_to_file(GraphUndirected,
+                     walker::GRAPH_DIR + "transitive_percolations_" + std::to_string(probability_p) + ".dat");
 }
 
 void generate_transitive_percolations() {
