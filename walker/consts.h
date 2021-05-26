@@ -9,6 +9,7 @@ const std::string DATA_DIR = "data/raw/";
 const std::string OTHER_DIR = "data/other/";
 const std::string WALK_DIR = "data/walks/";
 const std::string DIMENSION_DIR = "data/dimension/";
+const std::string RADII_DIR = "data/radii/";
 } // namespace walker
 
 #endif
