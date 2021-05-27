@@ -115,6 +115,7 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
       // compute the shortest distance from startnode to every node
       TSnap::GetShortPath(G, random_walk.start_node, node_radii);
       for (auto it = node_radii.BegI(); it < node_radii.EndI(); it++) {
+
         if (it.GetDat() > max_radius)
           max_radius = it.GetDat();
       }
@@ -139,7 +140,7 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
         if (config.export_prob_dist) {
           std::vector<double> prob_of_radius(max_radius + 1, 0.0);
           for (auto it = walk_in.lvl_probabilities.BegI(); it < walk_in.lvl_probabilities.EndI(); it++) {
-            const int radius = node_radii[it.GetKey()];
+            const int radius = node_radii.GetDat(it.GetKey());
             prob_of_radius[radius] += it.GetDat();
           }
 #pragma omp critical
