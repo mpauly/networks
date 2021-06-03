@@ -15,6 +15,13 @@ inline double minkowski_line_element(const std::vector<double> &x, const std::ve
   return (x[0] - y[0]) * (x[0] - y[0]) - (x[1] - y[1]) * (x[1] - y[1]);
 }
 
+template <int dim> inline double minkowski_line_element_nd(const std::vector<double> &x, const std::vector<double> &y) {
+  double line_elem = (x[0] - y[0]) * (x[0] - y[0]);
+  for (int i = 0; i < dim; i++)
+    line_elem -= (x[i] - y[i]) * (x[i] - y[i]);
+  return line_elem;
+}
+
 inline double euclidean_distance(const std::vector<double> &x, const std::vector<double> &y) {
   return (x[0] - y[0]) * (x[0] - y[0]) + (x[1] - y[1]) * (x[1] - y[1]);
 }
@@ -23,6 +30,12 @@ inline bool accept_all(const double &t, const double &x) { return true; }
 
 inline bool flat_connected(const std::vector<double> &x, const std::vector<double> &y) {
   if (minkowski_line_element(x, y) < 0)
+    return false;
+  return true;
+}
+
+template <int dim> inline bool flat_connected_nd(const std::vector<double> &x, const std::vector<double> &y) {
+  if (minkowski_line_element_nd<dim>(x, y) < 0)
     return false;
   return true;
 }
@@ -49,6 +62,23 @@ std::vector<std::vector<double>> sprinkle_minkowski(const int numberPoints) {
       positions[point][1] = x;
       point++;
     }
+  }
+  // sort based on time
+  std::sort(positions.begin(), positions.end(), x_before_y);
+  return positions;
+}
+
+template <int dim> std::vector<std::vector<double>> sprinkle_minkowski_nd(const int numberPoints) {
+  std::default_random_engine generator;
+  std::uniform_real_distribution<double> uni_dist(0.0, 1.0);
+
+  std::cout << "Making causal set with " << numberPoints << " points" << std::endl;
+  std::vector<std::vector<double>> positions(numberPoints, std::vector<double>(dim, 0));
+  int point = 0;
+  while (point < numberPoints) {
+    for (int i = 0; i < dim; i++)
+      positions[point][i] = uni_dist(generator);
+    point++;
   }
   // sort based on time
   std::sort(positions.begin(), positions.end(), x_before_y);
@@ -129,6 +159,54 @@ int construct_flat_edges(std::vector<std::vector<double>> &positions, std::funct
         // here the order of the calls is optimised for performance
         // this is why it looks slightly weird
         if (flat_connected(positions[in], positions[k]) && flat_connected(positions[k], positions[out])) {
+          edge = false;
+          break;
+        }
+      }
+      if (edge) {
+#pragma omp critical
+        {
+          add_edge(i, j);
+          edge_count++;
+        }
+      }
+    }
+  }
+  return edge_count;
+}
+
+template <int dim>
+int construct_flat_edges_nd(std::vector<std::vector<double>> &positions, std::function<void(int, int)> add_edge) {
+  const int numberPoints = positions.size();
+  const int ten_percent = numberPoints * 10 / 100;
+  double distance_squared;
+  bool edge;
+  int edge_count = 0;
+  std::cout << "- Transitive reduction" << std::endl;
+
+  for (int i = 0; i < numberPoints; i++) {
+    if (i % ten_percent == 0) {
+      std::cout << "  " << i * 100 / numberPoints << "% done" << std::endl;
+    }
+#pragma omp parallel for
+    for (int j = 0; j < i; j++) {
+      // these two points are space-like
+      if (!flat_connected_nd<dim>(positions[i], positions[j])) {
+        continue;
+      }
+      // sort the two points
+      const bool i_before_j = x_before_y(positions[i], positions[j]);
+      const int in = (i_before_j) ? i : j;
+      const int out = (i_before_j) ? j : i;
+      // first assume they are directly connected
+      edge = true;
+      // check all points in between the two points - this assumes a sorted input
+      for (int k = in + 1; k < out - 1; k++) {
+        // the relation actually is transitive
+        // here the order of the calls is optimised for performance
+        // this is why it looks slightly weird
+        if (flat_connected_nd<dim>(positions[in], positions[k]) &&
+            flat_connected_nd<dim>(positions[k], positions[out])) {
           edge = false;
           break;
         }
@@ -269,6 +347,45 @@ void average_shortest_path() {
   }
 }
 
+template <int dim> void average_shortest_path_nd() {
+  std::ofstream outfile;
+  outfile.open(walker::OTHER_DIR + "/average_path_" + std::to_string(dim) + "d.tsv", std::ofstream::out);
+  outfile << "nodes\t"
+          << "eff_diam\t"
+          << "full_diam\t"
+          << "avg_spl\t"
+          << "stddev_spl" << std::endl;
+
+  const std::vector<int> numberPointSet = {500,   750,   1000,  1500,  2000,  3000,  4000,  5000,  7500,
+                                           10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000};
+
+  for (int numberPoints : numberPointSet) {
+    const int test_nodes = (int)(numberPoints / 10);
+    std::cout << "- Nr. of points: " << numberPoints << std::endl;
+
+    PUNGraph Graph = TUNGraph::New();
+    std::vector<std::vector<double>> positions = sprinkle_minkowski_nd<dim>(numberPoints);
+
+    for (int point = 0; point < numberPoints; point++) {
+      IAssert(Graph->AddNode(point) == point);
+    }
+    std::function<void(int, int)> add_edge = [&Graph, &positions](int i, int j) { Graph->AddEdge(i, j); };
+    int nr_of_edges = construct_flat_edges(positions, add_edge);
+    Graph->Defrag();
+
+    std::cout << "Computing distances" << std::endl;
+
+    double eff_diam, avg_spl, stddev_spl;
+    int full_diam;
+
+    TSnap::GetBfsEffDiam(Graph, test_nodes, false, eff_diam, full_diam, avg_spl, stddev_spl);
+
+    std::cout << "  Finished set " << std::endl;
+    outfile << numberPoints << "\t" << eff_diam << "\t" << full_diam << "\t" << avg_spl << "\t" << stddev_spl
+            << std::endl;
+  }
+}
+
 void generate_transitive_percolations_for_beta(const double probability_p) {
   // work with a directed graph here
   PNGraph Graph = TNGraph::New();
@@ -356,6 +473,8 @@ int main(int argc, char *argv[]) {
       {"desitter", generate_desitter},
       {"antidesitter", generate_anti_desitter},
       {"shortestPath", average_shortest_path},
+      {"shortestPath_3d", average_shortest_path_nd<3>},
+      {"shortestPath_4d", average_shortest_path_nd<4>},
       {"transitive_percolations", generate_transitive_percolations},
   };
 
