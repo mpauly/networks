@@ -17,7 +17,7 @@ inline double minkowski_line_element(const std::vector<double> &x, const std::ve
 
 template <int dim> inline double minkowski_line_element_nd(const std::vector<double> &x, const std::vector<double> &y) {
   double line_elem = (x[0] - y[0]) * (x[0] - y[0]);
-  for (int i = 0; i < dim; i++)
+  for (int i = 1; i < dim; i++)
     line_elem -= (x[i] - y[i]) * (x[i] - y[i]);
   return line_elem;
 }
@@ -370,7 +370,7 @@ template <int dim> void average_shortest_path_nd() {
       IAssert(Graph->AddNode(point) == point);
     }
     std::function<void(int, int)> add_edge = [&Graph, &positions](int i, int j) { Graph->AddEdge(i, j); };
-    int nr_of_edges = construct_flat_edges(positions, add_edge);
+    int nr_of_edges = construct_flat_edges_nd<dim>(positions, add_edge);
     Graph->Defrag();
 
     std::cout << "Computing distances" << std::endl;
@@ -473,6 +473,7 @@ int main(int argc, char *argv[]) {
       {"desitter", generate_desitter},
       {"antidesitter", generate_anti_desitter},
       {"shortestPath", average_shortest_path},
+      {"shortestPath_2d", average_shortest_path_nd<2>},
       {"shortestPath_3d", average_shortest_path_nd<3>},
       {"shortestPath_4d", average_shortest_path_nd<4>},
       {"transitive_percolations", generate_transitive_percolations},
