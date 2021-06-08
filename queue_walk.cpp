@@ -75,12 +75,18 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
   std::ofstream radius_file;
   std::ofstream radius_nodes_file;
   if (config.export_prob_dist) {
-    radius_file.open(walker::RADII_DIR + config.graph + ".dat", std::ios::out);
-    radius_file << "# format: start_node sigma prob(0) prob(1) ..." << std::endl;
-    radius_file.close();
-    std::ofstream radius_nodes_file(walker::RADII_DIR + config.graph + "_nodes.dat", std::ios::out);
-    radius_nodes_file << "# format: start_node nr_of_nodes_at(0) nr_of_nodes_at(1) ..." << std::endl;
-    radius_nodes_file.close();
+    std::string rad_file_name = walker::RADII_DIR + config.graph + ".dat";
+    if (!fs::exists(rad_file_name)) {
+      radius_file.open(rad_file_name, std::ios::out);
+      radius_file << "# format: start_node sigma prob(0) prob(1) ..." << std::endl;
+      radius_file.close();
+    }
+    std::string node_file_name = walker::RADII_DIR + config.graph + "_nodes.dat";
+    if (!fs::exists(node_file_name)) {
+      std::ofstream radius_nodes_file(node_file_name, std::ios::out);
+      radius_nodes_file << "# format: start_node nr_of_nodes_at(0) nr_of_nodes_at(1) ..." << std::endl;
+      radius_nodes_file.close();
+    }
   }
 
 #pragma omp parallel for
@@ -90,9 +96,12 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
 
     int steps = config.sigma_max;
 
+    bool continue_walk = false;
+
 #pragma omp critical
     {
       if (fs::exists(walk_filename)) {
+        continue_walk = true;
         std::cout << "- Continuing Walk ";
         random_walk = walker::importRandomWalkFromBinaryFile(walk_filename);
       } else {
@@ -111,7 +120,7 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
     int max_radius = 0;
     TIntH node_radii(G->GetNodes());
 
-    if (config.export_prob_dist) {
+    if (!continue_walk && config.export_prob_dist) {
       // compute the shortest distance from startnode to every node
       TSnap::GetShortPath(G, random_walk.start_node, node_radii);
       for (auto it = node_radii.BegI(); it < node_radii.EndI(); it++) {
