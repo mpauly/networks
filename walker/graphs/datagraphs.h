@@ -92,7 +92,8 @@ void make_drosophila() {
 void make_drosophila_large() {
   std::cout << "== Writing Drosophila Brain graph - large version ==" << std::endl;
   PUNGraph G = TSnap::LoadEdgeList<PUNGraph>(
-      (walker::DATA_DIR + "exported-traced-adjacencies-v1.2/traced-total-connections.csv").c_str(), 0, 1, ',');
+      (walker::DATA_DIR + "exported-traced-adjacencies-v1.2/traced-total-connections-renumbered.csv").c_str(), 0, 1,
+      ',');
   save_graph_to_file(G, walker::GRAPH_DIR + "fly-drosophila-large.dat");
 }
 // =============== Drosophila brain large network ==========================
@@ -102,7 +103,8 @@ void make_drosophila_large_network() {
 
   std::fstream osmfile;
   int rows, columns, entries;
-  osmfile.open(walker::DATA_DIR + "exported-traced-adjacencies-v1.2/traced-total-connections.csv", std::ios::in);
+  osmfile.open(walker::DATA_DIR + "exported-traced-adjacencies-v1.2/traced-total-connections-renumbered.csv",
+               std::ios::in);
 
   std::map<long, int> node_ids;
 
