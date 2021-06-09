@@ -13,12 +13,14 @@ counter = 0
 
 for line in infile.readlines():
     inId, outId, weight = line.split(",")
-    inId = mapping.get(inId, counter)
-    if inId == counter:
+    if inId not in mapping:
+        mapping[inId] = counter
         counter += 1
-    outId = mapping.get(outId, counter)
-    if outId == counter:
+    inId = mapping[inId]
+    if outId not in mapping:
+        mapping[outId] = counter
         counter += 1
+    outId = mapping[outId]
     outfile.write("{},{},{}".format(inId, outId, weight))
 
 infile.close()
