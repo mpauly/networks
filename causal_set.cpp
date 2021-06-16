@@ -356,8 +356,9 @@ template <int dim> void average_shortest_path_nd() {
           << "avg_spl\t"
           << "stddev_spl" << std::endl;
 
-  const std::vector<int> numberPointSet = {500,   750,   1000,  1500,  2000,  3000,  4000,  5000,  7500,
-                                           10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000};
+  const std::vector<int> numberPointSet = {500,   750,   1000,  1500,  2000,  3000,  4000,  5000,
+                                           7500,  10000, 15000, 20000, 25000, 30000, 35000, 40000,
+                                           45000, 50000, 60000, 70000, 80000, 90000, 100000};
 
   for (int numberPoints : numberPointSet) {
     const int test_nodes = (int)(numberPoints / 10);
