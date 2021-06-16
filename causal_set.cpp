@@ -476,6 +476,8 @@ int main(int argc, char *argv[]) {
       {"shortestPath_2d", average_shortest_path_nd<2>},
       {"shortestPath_3d", average_shortest_path_nd<3>},
       {"shortestPath_4d", average_shortest_path_nd<4>},
+      {"shortestPath_5d", average_shortest_path_nd<5>},
+      {"shortestPath_6d", average_shortest_path_nd<6>},
       {"transitive_percolations", generate_transitive_percolations},
   };
 
