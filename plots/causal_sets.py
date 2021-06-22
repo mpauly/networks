@@ -22,40 +22,64 @@ for dim in [2, 3, 4, 5, 6]:
 data = pd.concat(dfs)
 data["stderr_spl"] = data["stddev_spl"] / np.sqrt(0.1 * data["nodes"])
 data["log_nodes"] = np.log(data["nodes"])
+data["log_avg_spl"] = np.log(data["avg_spl"])
+data["log_avg_spl_err"] = data["stderr_spl"] / data["avg_spl"]
 # %%
 
-ax = plt.gca()
+ax1 = plt.gca()
+# ax2 = plt.axes([0, 0, 1, 1])
+ip = InsetPosition(ax1, [0.6, 0.45, 0.4, 0.4])
+# ax2.set_axes_locator(ip)
 dim_df = pd.DataFrame(columns=["dim", "intercept", "slope"])
 
 for dim, col in zip(
     [2, 3, 4, 5, 6], ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple"]
 ):
     thisdata = data[data["dim"] == dim]
-    thisdata.plot.scatter(
-        "nodes",
-        "avg_spl",
-        yerr="stderr_spl",
-        ax=ax,
-        c=col,
-        label="$d={}$".format(dim),
-        figsize=(5.52, 3.41),
-    )
     regr = linear_model.LinearRegression()
-    model = regr.fit(thisdata[["log_nodes"]], thisdata[["avg_spl"]])
-
+    model = regr.fit(thisdata[["log_nodes"]], thisdata[["log_avg_spl"]])
     prediction = model.predict(thisdata[["log_nodes"]])
-    ax.plot(thisdata[["nodes"]], prediction, c=col)
+
+    for ax in (ax1,):  # ax2):
+        thisdata.plot.scatter(
+            "nodes",
+            "avg_spl",
+            yerr="stderr_spl",
+            ax=ax,
+            c=col,
+            label="$d={}$".format(dim),
+            figsize=(5.52, 3.41),
+        )
+        ax.plot(thisdata[["nodes"]], np.exp(prediction), c=col)
 
     dim_df = dim_df.append(
         {"dim": dim, "intercept": model.intercept_[0], "slope": model.coef_[0, 0]},
         ignore_index=True,
     )
 
-plt.legend()
-plt.xlabel("Nr. of nodes")
-plt.ylabel("Mean shortest path length")
-plt.semilogx()
+dim_df["dim"] = dim_df["dim"].astype(int)
 
+ax1.loglog()
+ax1.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter(useMathText=True))
+ax1.yaxis.set_minor_formatter(matplotlib.ticker.ScalarFormatter(useMathText=True))
+
+ax1.legend(loc="upper right")
+ax1.set_xlabel("Nr. of nodes")
+ax1.set_ylabel("Mean shortest path length")
+
+fig = plt.gcf()
+fig.set_size_inches(5.52, 3.41)
+fig.savefig("../plots/out/causal_set_avg_spl.pdf", bbox_inches="tight")
+# %%
+texfile = open("../plots/out/table.tex", "w")
+dim_df.to_latex(
+    buf=texfile,
+    columns=["dim", "intercept", "slope"],
+    header=["$d$", "intercept", "slope"],
+    float_format="{:0.3f}".format,
+    index=False,
+)
+texfile.close()
 # %% [markdown]
 # ## Causal Set without regulator
 # %%
