@@ -106,13 +106,10 @@ void make_drosophila_large_network() {
   osmfile.open(walker::DATA_DIR + "exported-traced-adjacencies-v1.2/traced-total-connections-renumbered.csv",
                std::ios::in);
 
-  std::map<long, int> node_ids;
-
   if (osmfile.is_open()) {
     std::string line;
     std::string token;
 
-    long in_id_long, out_id_long;
     int in_id, out_id, weight;
 
     int id_counter;
@@ -124,19 +121,9 @@ void make_drosophila_large_network() {
         continue;
       std::istringstream iss(line);
       std::getline(iss, token, ',');
-      in_id_long = std::stol(token);
-      if (node_ids.find(in_id_long) == node_ids.end()) {
-        node_ids[in_id_long] = id_counter;
-        id_counter++;
-      }
-      in_id = node_ids[in_id_long];
+      in_id = std::stoi(token);
       std::getline(iss, token, ',');
-      out_id_long = std::stol(token);
-      if (node_ids.find(out_id_long) == node_ids.end()) {
-        node_ids[out_id_long] = id_counter;
-        id_counter++;
-      }
-      out_id = node_ids[out_id_long];
+      out_id = std::stoi(token);
       std::getline(iss, token, ',');
       weight = std::stoi(token);
       if (!G->IsNode(in_id)) {
