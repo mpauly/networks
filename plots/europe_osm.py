@@ -19,7 +19,7 @@ startnodes = np.unique(startnode)
 
 for node in startnodes:
     mask = (node == startnode) & (~np.isnan(dim))
-    ax1.plot(sigma[mask], dim[mask], alpha=0.2, c="tab:blue")
+    ax1.plot(sigma[mask], dim[mask], alpha=0.2, c="tab:blue", zorder=0.5)
 
 sigmas = np.unique(sigma)
 means = np.zeros(sigmas.shape)
@@ -30,7 +30,7 @@ for ind, s in enumerate(sigmas):
     relevant_data = data[data[:, 1] == s]
     dimensions = relevant_data[:, 2]
     means[ind] = np.mean(dimensions)
-    stds[ind] = np.std(dimensions)
+    stds[ind] = np.std(dimensions, ddof=1)
 
 ax1.plot(sigmas, means, c="tab:orange")
 plt.fill_between(sigmas, means + stds, means - stds, alpha=0.2, color="tab:orange")

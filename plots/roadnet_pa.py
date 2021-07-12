@@ -30,7 +30,7 @@ data_plot = data_plot[:, :, 1:]
 fig, ax1 = plt.subplots()
 ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
 ax1.set_ylim(0, 5)
-line_segments = LineCollection(data_plot, alpha=0.2)
+line_segments = LineCollection(data_plot, alpha=0.2, zorder=0.5)
 ax1.add_collection(line_segments)
 
 mean_per_sigma = data.groupby("sigma").mean()
@@ -44,7 +44,7 @@ ref_sigma = mean_per_sigma["dim"].idxmax()
 
 mean_per_sigma["dim"].plot(ax=ax1, color="tab:orange")
 plt.fill_between(
-    mean_per_sigma.index,
+    mean_per_sigma.index.to_numpy(),
     mean_per_sigma["dim"] + std_dev_per_sigma["dim"],
     mean_per_sigma["dim"] - std_dev_per_sigma["dim"],
     alpha=0.2,
