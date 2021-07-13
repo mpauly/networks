@@ -46,14 +46,15 @@ plt.ylabel("$d_{\\rm spec}$")
 ax2 = plt.axes([0, 0, 1, 1])
 # Manually set the position and relative size of the inset axes within ax1
 ip = InsetPosition(ax1, [0.65, 0.65, 0.3, 0.3])
+sigma_ref = 2500
 ax2.set_axes_locator(ip)
-ax2.set_xlabel("$d_{\\rm spec}(\\sigma = 450)$")
-ax2.set_ylabel("$n$")
+ax2.set_xlabel("$d_{{\\rm spec}}(\\sigma = {})$".format(sigma_ref))
+ax2.set_ylabel("Freqency")
 
-relevant_data = data[data[:, 1] == 450]
-dimensions_450 = relevant_data[:, 2]
-ax2.hist(dimensions_450, bins=np.arange(0.5, 5.5, 0.25))
-ax2.axvline(np.mean(dimensions_450), color="tab:orange")
+relevant_data = data[data[:, 1] == sigma_ref]
+dimensions_ref = relevant_data[:, 2]
+ax2.hist(dimensions_ref, bins=np.arange(0.5, 5.5, 0.25))
+ax2.axvline(np.mean(dimensions_ref), color="tab:orange")
 ax2.axvline(2, color="tab:green", ls="--")
 
 fig = plt.gcf()

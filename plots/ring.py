@@ -121,9 +121,7 @@ linecycler = cycle(lines)
 for rc in rand_conn_vals:
     mask = rc == rand_conn
     these_sigmas = sigma[mask]
-    ax1.plot(
-        these_sigmas, dim[mask], label="conns=${:0.0f}$".format(rc), ls=next(linecycler)
-    )
+    ax1.plot(these_sigmas, dim[mask], label="${:0.0f}$".format(rc), ls=next(linecycler))
 
 ax1.legend(loc="lower right")
 ax1.set_xlabel("$\\sigma$")

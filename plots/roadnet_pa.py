@@ -41,6 +41,7 @@ print(
     )
 )
 ref_sigma = mean_per_sigma["dim"].idxmax()
+ref_sigma = 25000
 
 mean_per_sigma["dim"].plot(ax=ax1, color="tab:orange")
 plt.fill_between(

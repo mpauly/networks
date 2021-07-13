@@ -96,7 +96,7 @@ data_plot = data_plot[:, :, 1:3]
 fig, ax1 = plt.subplots()
 ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
 ax1.set_ylim(0, 15)
-line_segments = LineCollection(data_plot, alpha=0.2)
+line_segments = LineCollection(data_plot, alpha=0.2, zorder=0.5)
 ax1.add_collection(line_segments)
 
 plt.axhline(2, c="tab:green", ls="--")
@@ -146,7 +146,7 @@ data_plot = data_plot[:, :, 1:3]
 fig, ax1 = plt.subplots()
 ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
 ax1.set_ylim(0, 15)
-line_segments = LineCollection(data_plot, alpha=0.2)
+line_segments = LineCollection(data_plot, alpha=0.2, zorder=0.5)
 ax1.add_collection(line_segments)
 
 plt.axhline(2, c="tab:green", ls="--")
@@ -192,7 +192,7 @@ data_plot = data_plot[:, :, 1:3]
 fig, ax1 = plt.subplots()
 ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
 ax1.set_ylim(0, 8)
-line_segments = LineCollection(data_plot, alpha=0.2)
+line_segments = LineCollection(data_plot, alpha=0.2, zorder=0.5)
 ax1.add_collection(line_segments)
 
 mean_per_sigma = data.groupby("sigma").mean()
@@ -229,7 +229,7 @@ data_plot = data_plot[:, :, 1:3]
 fig, ax1 = plt.subplots()
 ax1.set_xlim(data["sigma"].min(), data["sigma"].max())
 ax1.set_ylim(0, 11)
-line_segments = LineCollection(data_plot, alpha=0.2)
+line_segments = LineCollection(data_plot, alpha=0.2, zorder=0.5)
 ax1.add_collection(line_segments)
 
 mean_per_sigma = data.groupby("sigma").mean()
