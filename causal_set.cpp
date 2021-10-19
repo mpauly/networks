@@ -228,12 +228,15 @@ void generate_minkowski() {
   PUNGraph Graph = TUNGraph::New();
   PUNGraph GraphCutoff1 = TUNGraph::New();
   PUNGraph GraphCutoff2 = TUNGraph::New();
-  std::ofstream nodefile;
-  nodefile.open(walker::OTHER_DIR + "nodes_cs_minkowski.csv", std::ofstream::out);
-  std::ofstream edgefile;
-  edgefile.open(walker::OTHER_DIR + "edges_cs_minkowski.csv", std::ofstream::out);
 
-  const int numberPoints = 625;
+  bool output_causalset = false;
+  std::ofstream nodefile;
+  std::ofstream edgefile;
+  if (output_causalset) {
+    nodefile.open(walker::OTHER_DIR + "nodes_cs_minkowski.csv", std::ofstream::out);
+    edgefile.open(walker::OTHER_DIR + "edges_cs_minkowski.csv", std::ofstream::out);
+  }
+  const int numberPoints = 1e6;
   const double euclidean_cutoff1 = 30. / sqrt(numberPoints);
   const double euclidean_cutoff2 = 100. / sqrt(numberPoints);
 
@@ -243,10 +246,12 @@ void generate_minkowski() {
     IAssert(Graph->AddNode(point) == point);
     IAssert(GraphCutoff1->AddNode(point) == point);
     IAssert(GraphCutoff2->AddNode(point) == point);
-    nodefile << point << "\t" << positions[point][0] << "\t" << positions[point][1] << "\n";
+    if (output_causalset) {
+      nodefile << point << "\t" << positions[point][0] << "\t" << positions[point][1] << "\n";
+    }
   }
   std::function<void(int, int)> add_edge = [&Graph, &GraphCutoff1, &GraphCutoff2, &positions, euclidean_cutoff1,
-                                            euclidean_cutoff2, &edgefile](int i, int j) {
+                                            euclidean_cutoff2, &edgefile, output_causalset](int i, int j) {
     Graph->AddEdge(i, j);
     const double euclidean_dist = euclidean_distance(positions[i], positions[j]);
     if (euclidean_dist < euclidean_cutoff1) {
@@ -255,8 +260,10 @@ void generate_minkowski() {
     if (euclidean_dist < euclidean_cutoff2) {
       GraphCutoff2->AddEdge(i, j);
     }
-    edgefile << positions[i][0] << "\t" << positions[i][1] << "\t" << positions[j][0] << "\t" << positions[j][1] << "\t"
-             << euclidean_dist << "\n";
+    if (output_causalset) {
+      edgefile << positions[i][0] << "\t" << positions[i][1] << "\t" << positions[j][0] << "\t" << positions[j][1]
+               << "\t" << euclidean_dist << "\n";
+    }
   };
   int nr_of_edges = construct_flat_edges(positions, add_edge);
   Graph->Defrag();
