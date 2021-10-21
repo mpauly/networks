@@ -132,7 +132,8 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
       for (auto it = node_radii.BegI(); it < node_radii.EndI(); it++) {
         counts[it.GetDat()]++;
       }
-      std::ofstream radius_file(walker::RADII_DIR + config.graph + "_nodes.dat", std::ios::out | std::ios::app);
+      std::ofstream radius_file(walker::RADII_DIR + config.graph + "_nodes_" + std::to_string(walk) + ".dat",
+                                std::ios::out | std::ios::app);
       radius_file << random_walk.start_node;
       for (int count : counts) {
         radius_file << "\t" << count;
@@ -141,8 +142,8 @@ template <class Graph> int process_network_or_graph(WalkConfig config) {
       radius_file.close();
     }
 
-    std::function<void(walker::RandomWalk)> progress_monitor = [walk, config, walk_filename, max_radius,
-                                                                node_radii](walker::RandomWalk walk_in) {
+    std::function<void(const walker::RandomWalk &)> progress_monitor = [walk, config, walk_filename, max_radius,
+                                                                        node_radii](const walker::RandomWalk &walk_in) {
       if (walk_in.sigma % 50 == 0)
         std::cout << "\t - w" << walk << " sigma = " << walk_in.sigma << std::endl;
       if (walk_in.sigma % config.interval == 0) {
