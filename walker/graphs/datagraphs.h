@@ -16,6 +16,13 @@ void make_as_skitter() {
   PUNGraph G = TSnap::LoadEdgeList<PUNGraph>((walker::DATA_DIR + "as-skitter.txt").c_str(), 0, 1);
   save_graph_to_file(G, walker::GRAPH_DIR + "as-skitter.dat");
 }
+// =============== Internet topology 2 ===============================
+void make_internet_caida_small() {
+  std::cout << "== Writing AS CAIDA Internet topology graph ==" << std::endl;
+  PUNGraph G = TSnap::LoadEdgeList<PUNGraph>((walker::DATA_DIR + "internet_caida_as.dat").c_str(), 0, 1);
+  G = TSnap::GetMxWcc(G);
+  save_graph_to_file(G, walker::GRAPH_DIR + "internet_caida_as.dat");
+}
 // =============== Internet topology large ===============================
 void make_internet_caida_large() {
   std::cout << "== Writing Internet topology large graph ==" << std::endl;

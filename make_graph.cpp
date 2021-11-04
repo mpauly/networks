@@ -6,6 +6,7 @@ int main(int argc, char *argv[]) {
   std::map<std::string, std::function<void()>> known_functions = {
       // data graphs
       {"as_skitter", make_as_skitter},
+      {"internet_caida", make_internet_caida_small},
       {"internet_caida_large", make_internet_caida_large},
       {"roadnet_pa", make_roadnet_pa},
       {"metabolism", make_metabolism},
