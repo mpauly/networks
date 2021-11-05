@@ -1,6 +1,8 @@
 # %% [markdown]
 # ## Watts Strogatz
 # %%
+from itertools import cycle
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,19 +53,27 @@ fig
 
 
 # %%
+lines = ["-", "--", "-.", ":"]
 ref_delta = 0.5
-format_din = (11.04, 3.41)
+format_din = (8.04, 2.41)
 fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(15, 4))
 for ind, degree in enumerate([2, 4, 6]):
+    linecycler = cycle(lines)
     for name, group in data[
         (data["diffusion_const"] == ref_delta) & (data["degree"] == degree)
     ].groupby("rewiring_prob"):
-        ax[ind].plot(group["sigma"], group["dim"], label="$\\beta={}$".format(name))
+        ax[ind].plot(
+            group["sigma"],
+            group["dim"],
+            label="$\\beta={}$".format(name),
+            ls=next(linecycler),
+        )
     ax[ind].legend()
     ax[ind].set_xlim(0, 200)
+    ax[ind].set_ylim(0, 7)
     ax[ind].set_xlabel("$\\sigma$")
     ax[ind].set_ylabel("$d_{\\rm spec}$")
-    ax[ind].set_title("$D={}$".format(degree))
+    ax[ind].set_title("$\\bar{k}=" + str(degree) + "$")
 
 # %%
 fig.set_size_inches(11.04, 3.41)
@@ -188,22 +198,24 @@ fig.savefig("../plots/out/watts_strogatz_3d.pdf", bbox_inches="tight")
 #%%
 
 plt.clf()
-
 # %%
+lines = ["-", "--", "-.", ":"]
+linecycler = cycle(lines)
+
 fig = plt.gcf()
-for beta in ['0.001', '0.005', '0.010', '0.050']:
+for beta in ["0.001", "0.005", "0.010", "0.050"]:
     dimfile = "../data/dimension/watts_strogatz_3d_100_{}000.dat".format(beta)
     data = pd.read_table(dimfile, comment="#", names=["start_node", "sigma", "dim"])
     mean_per_sigma = data.groupby("sigma").mean()
-    mean_per_sigma["dim"].plot(label="$\\beta={}$".format(beta))
+    mean_per_sigma["dim"].plot(label="$\\beta={}$".format(beta), ls=next(linecycler))
 
 plt.legend()
 plt.xlabel("$\\sigma$")
 plt.ylabel("$d_{\\rm spec}$")
 
-plt.axhline(3.0, c='tab:gray', ls="--")
+plt.axhline(3.0, c="tab:gray", ls="--")
 # %%
-fig.set_size_inches(5.52, 3.41)
+fig.set_size_inches(4.5, 2.7)
 fig.savefig("../plots/out/watts_strogatz_3d_var_beta.pdf", bbox_inches="tight")
 
 # %%
